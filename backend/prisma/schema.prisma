@@ -1,0 +1,205 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and user management
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  password          String
+  firstName         String?
+  lastName          String?
+  avatar            String?
+  isActive          Boolean            @default(true)
+  lastLogin         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  workspaceMembers  WorkspaceMember[]
+  ownedWorkspaces   Workspace[]        @relation("WorkspaceOwner")
+  comments          Comment[]
+  activities        ActivityLog[]
+  notifications     Notification[]     @relation("NotificationRecipient")
+  sentNotifications Notification[]     @relation("NotificationSender")
+
+  @@map("users")
+}
+
+// Workspace model for multi-tenant organization
+model Workspace {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  logo        String?
+  ownerId     String
+  owner       User              @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     WorkspaceMember[]
+  boards      Board[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("workspaces")
+}
+
+// WorkspaceMember model for user roles within workspaces
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role      @default(MEMBER)
+  joinedAt    DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+// Board model for project/task organization
+model Board {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  icon        String?
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  columns     BoardColumn[]
+  items       BoardItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("boards")
+}
+
+// BoardColumn model for board structure
+model BoardColumn {
+  id        String      @id @default(cuid())
+  name      String
+  order     Int
+  boardId   String
+  board     Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  items     BoardItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("board_columns")
+}
+
+// BoardItem model for tasks/cards
+model BoardItem {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  order       Int
+  boardId     String
+  board       Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  columnId    String
+  column      BoardColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  dueDate     DateTime?
+  priority    Priority    @default(MEDIUM)
+  status      Status      @default(TODO)
+  comments    Comment[]
+  activities  ActivityLog[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("board_items")
+}
+
+// Comment model for discussions with threading and mentions
+model Comment {
+  id        String    @id @default(cuid())
+  content   String
+  itemId    String
+  item      BoardItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Threading support
+  parentId  String?
+  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentThread")
+  
+  // Mentions and metadata
+  mentions  Json?     // Array of user IDs mentioned in the comment
+  isEdited  Boolean   @default(false)
+  editedAt  DateTime?
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("comments")
+}
+
+// ActivityLog model for tracking changes
+model ActivityLog {
+  id        String    @id @default(cuid())
+  action    String
+  entityId  String
+  entityType String
+  itemId    String?
+  item      BoardItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metadata  Json?
+  createdAt DateTime  @default(now())
+
+  @@map("activity_logs")
+}
+
+// Notification model for user alerts
+model Notification {
+  id          String        @id @default(cuid())
+  type        NotificationType
+  title       String
+  message     String
+  isRead      Boolean       @default(false)
+  recipientId String
+  recipient   User          @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  senderId    String?
+  sender      User?         @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+  entityId    String?
+  entityType  String?
+  createdAt   DateTime      @default(now())
+
+  @@map("notifications")
+}
+
+// Enums for various model fields
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum Status {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum NotificationType {
+  SYSTEM
+  MENTION
+  ASSIGNMENT
+  COMMENT
+  DUE_DATE
+  INVITATION
+}

@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pm-postgres-prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-project_management}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - pm-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: pm-redis-prod
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - pm-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: pm-backend-prod
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: 3001
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - pm-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: pm-frontend-prod
+    depends_on:
+      - backend
+    networks:
+      - pm-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: pm-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - pm-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+
+networks:
+  pm-network:
+    driver: bridge

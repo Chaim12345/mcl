@@ -1,0 +1,27 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy root package files (for workspace)
+COPY package*.json ./
+
+# Copy backend package.json
+COPY backend/package.json ./backend/
+
+# Install dependencies from root (workspace)
+RUN npm ci
+
+# Copy source code
+COPY backend/ ./backend/
+
+# Set working directory to backend
+WORKDIR /app/backend
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Expose port
+EXPOSE 3001
+
+# Start development server
+CMD ["npm", "run", "dev"]
