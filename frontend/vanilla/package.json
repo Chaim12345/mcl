@@ -1,0 +1,84 @@
+{
+  "name": "project-management-platform-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Comprehensive test suite for frontend components and services",
+  "main": "test-runner.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:performance": "node tests/performance/run-performance-tests.js",
+    "test:security": "node tests/security/run-security-tests.js",
+    "test:all": "npm run test && npm run test:e2e && npm run test:performance",
+    "test:ci": "npm run test:coverage && npm run test:e2e --reporter=html"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/user-event": "^14.5.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^23.0.0",
+    "supertest": "^6.3.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup/test-setup.js"],
+    "testMatch": [
+      "**/tests/**/*.test.js",
+      "**/tests/**/*.spec.js"
+    ],
+    "collectCoverageFrom": [
+      "js/**/*.js",
+      "!js/**/*.test.js",
+      "!js/**/*.spec.js",
+      "!node_modules/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 85,
+        "functions": 85,
+        "lines": 85,
+        "statements": 85
+      }
+    },
+    "coverageReporters": ["text", "lcov", "html"]
+  },
+  "playwright": {
+    "testDir": "./tests/e2e",
+    "reporter": [
+      ["html", { "outputFolder": "playwright-report" }],
+      ["json", { "outputFile": "playwright-report/results.json" }]
+    ],
+    "use": {
+      "baseURL": "http://localhost:3000",
+      "trace": "on-first-retry",
+      "screenshot": "only-on-failure",
+      "video": "retain-on-failure"
+    },
+    "projects": [
+      {
+        "name": "chromium",
+        "use": { "browserName": "chromium" }
+      },
+      {
+        "name": "firefox",
+        "use": { "browserName": "firefox" }
+      },
+      {
+        "name": "webkit",
+        "use": { "browserName": "webkit" }
+      },
+      {
+        "name": "Mobile Chrome",
+        "use": { "viewport": { "width": 393, "height": 851 }, "deviceScaleFactor": 2.75, "isMobile": true, "hasTouch": true, "defaultBrowserType": "chromium" }
+      },
+      {
+        "name": "Mobile Safari",
+        "use": { "viewport": { "width": 390, "height": 844 }, "deviceScaleFactor": 3, "isMobile": true, "hasTouch": true, "defaultBrowserType": "webkit" }
+      }
+    ]
+  }
+}

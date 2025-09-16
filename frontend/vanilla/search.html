@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search & Filter - Kirom</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        .search-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .search-header {
+            margin-bottom: 30px;
+        }
+        .search-main {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+        .search-sidebar {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: fit-content;
+        }
+        .search-results {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            min-height: 600px;
+        }
+        .search-bar-container {
+            margin-bottom: 30px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1em;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: #007bff;
+        }
+        .filter-section {
+            margin-bottom: 25px;
+        }
+        .filter-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .filter-group {
+            margin-bottom: 10px;
+        }
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+        }
+        .filter-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        .search-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .results-count {
+            color: #666;
+        }
+        .sort-options {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .sort-select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-result-item {
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        .search-result-item:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        }
+        .result-title {
+            font-weight: bold;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .result-title:hover {
+            text-decoration: underline;
+        }
+        .result-meta {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+        .result-description {
+            color: #555;
+            line-height: 1.5;
+        }
+        .result-tags {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .result-tag {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            border: 1px solid #dee2e6;
+        }
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .saved-filters {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .saved-filter-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .saved-filter-item:hover {
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">Kirom</h1>
+                <nav class="nav-menu">
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                    <a href="/boards" class="nav-link">Boards</a>
+                    <a href="/workspaces" class="nav-link">Workspaces</a>
+                    <a href="/search" class="nav-link active">Search</a>
+                    <a href="/calendar" class="nav-link">Calendar</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <img src="/assets/images/avatar1.jpg" alt="User" class="avatar">
+                    <span class="user-name">John Doe</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="search-container">
+                <div class="search-header">
+                    <h2>Search & Filter</h2>
+                    <div class="search-bar-container">
+                        <input type="text" id="search-input" class="search-input" 
+                               placeholder="Search across boards, items, comments, and more...">
+                    </div>
+                </div>
+
+                <div class="search-main">
+                    <aside class="search-sidebar">
+                        <div id="filter-container">
+                            <!-- Filters will be populated by FilterModal component -->
+                        </div>
+                        
+                        <div class="saved-filters">
+                            <h3>Saved Filters</h3>
+                            <div id="saved-filters-list">
+                                <!-- Saved filters will be populated by JavaScript -->
+                            </div>
+                            <button id="save-current-filter" class="btn-secondary" style="width: 100%; margin-top: 10px;">
+                                Save Current Filter
+                            </button>
+                        </div>
+                    </aside>
+
+                    <div class="search-results">
+                        <div class="search-stats">
+                            <div class="results-count" id="results-count">
+                                Search for items, boards, comments, and more
+                            </div>
+                            <div class="sort-options">
+                                <label for="sort-select">Sort by:</label>
+                                <select id="sort-select" class="sort-select">
+                                    <option value="relevance">Relevance</option>
+                                    <option value="date">Date Modified</option>
+                                    <option value="title">Title</option>
+                                    <option value="priority">Priority</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="search-results-container">
+                            <!-- Search results will be populated by SearchResults component -->
+                            <div class="no-results" id="no-results" style="display: none;">
+                                <h3>No results found</h3>
+                                <p>Try adjusting your search terms or filters.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load Components -->
+    <script type="module">
+        import { SearchBar } from '/js/components/search/SearchBar.js';
+        import { SearchResults } from '/js/components/search/SearchResults.js';
+        import { FilterModal } from '/js/components/filter/FilterModal.js';
+        import { SearchService } from '/js/services/search.js';
+        import { FilterService } from '/js/services/filter.js';
+
+        class SearchPage {
+            constructor() {
+                this.searchService = new SearchService();
+                this.filterService = new FilterService();
+                this.searchBar = null;
+                this.searchResults = null;
+                this.filterModal = null;
+                this.currentQuery = '';
+                this.currentFilters = {};
+                this.currentSort = 'relevance';
+                this.init();
+            }
+
+            init() {
+                this.setupComponents();
+                this.setupEventListeners();
+                this.loadSavedFilters();
+                this.handleUrlParams();
+            }
+
+            setupComponents() {
+                // Initialize search bar component
+                const searchContainer = document.querySelector('.search-bar-container');
+                this.searchBar = new SearchBar(searchContainer, {
+                    onSearch: this.handleSearch.bind(this),
+                    placeholder: 'Search across boards, items, comments, and more...'
+                });
+
+                // Initialize search results component
+                const resultsContainer = document.getElementById('search-results-container');
+                this.searchResults = new SearchResults(resultsContainer, {
+                    onItemClick: this.handleResultClick.bind(this)
+                });
+
+                // Initialize filter component
+                const filterContainer = document.getElementById('filter-container');
+                this.filterModal = new FilterModal(filterContainer, {
+                    onFiltersChanged: this.handleFiltersChanged.bind(this),
+                    embedded: true // Show as sidebar instead of modal
+                });
+            }
+
+            setupEventListeners() {
+                // Search input
+                const searchInput = document.getElementById('search-input');
+                let searchTimeout;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.handleSearch(e.target.value);
+                    }, 300);
+                });
+
+                // Sort selection
+                document.getElementById('sort-select').addEventListener('change', (e) => {
+                    this.currentSort = e.target.value;
+                    this.performSearch();
+                });
+
+                // Save filter button
+                document.getElementById('save-current-filter').addEventListener('click', () => {
+                    this.saveCurrentFilter();
+                });
+            }
+
+            handleUrlParams() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const query = urlParams.get('q');
+                if (query) {
+                    document.getElementById('search-input').value = query;
+                    this.handleSearch(query);
+                }
+            }
+
+            async handleSearch(query) {
+                this.currentQuery = query;
+                if (query.trim()) {
+                    await this.performSearch();
+                } else {
+                    this.clearResults();
+                }
+            }
+
+            async performSearch() {
+                if (!this.currentQuery.trim()) return;
+
+                try {
+                    const results = await this.searchService.searchItems({
+                        query: this.currentQuery,
+                        filters: this.currentFilters,
+                        sort: this.currentSort,
+                        limit: 50
+                    });
+
+                    this.displayResults(results);
+                    this.updateResultsCount(results.length);
+                    
+                    // Update URL
+                    const url = new URL(window.location);
+                    url.searchParams.set('q', this.currentQuery);
+                    window.history.replaceState({}, '', url);
+
+                } catch (error) {
+                    console.error('Search failed:', error);
+                    this.showError('Search failed. Please try again.');
+                }
+            }
+
+            displayResults(results) {
+                if (results.length === 0) {
+                    document.getElementById('no-results').style.display = 'block';
+                    document.getElementById('search-results-container').innerHTML = '';
+                    document.getElementById('search-results-container').appendChild(
+                        document.getElementById('no-results')
+                    );
+                } else {
+                    document.getElementById('no-results').style.display = 'none';
+                    this.searchResults.render(results);
+                }
+            }
+
+            updateResultsCount(count) {
+                const countEl = document.getElementById('results-count');
+                if (count === 0) {
+                    countEl.textContent = 'No results found';
+                } else {
+                    countEl.textContent = `${count} result${count === 1 ? '' : 's'} found`;
+                }
+            }
+
+            clearResults() {
+                document.getElementById('search-results-container').innerHTML = '';
+                document.getElementById('results-count').textContent = 'Search for items, boards, comments, and more';
+            }
+
+            handleFiltersChanged(filters) {
+                this.currentFilters = filters;
+                if (this.currentQuery.trim()) {
+                    this.performSearch();
+                }
+            }
+
+            handleResultClick(result) {
+                // Navigate to the appropriate page based on result type
+                switch (result.type) {
+                    case 'board':
+                        window.location.href = `/board?id=${result.id}`;
+                        break;
+                    case 'item':
+                        window.location.href = `/board?id=${result.boardId}&item=${result.id}`;
+                        break;
+                    case 'comment':
+                        window.location.href = `/board?id=${result.boardId}&item=${result.itemId}#comment-${result.id}`;
+                        break;
+                    default:
+                        console.log('Unknown result type:', result.type);
+                }
+            }
+
+            async loadSavedFilters() {
+                try {
+                    const savedFilters = await this.filterService.getSavedFilters();
+                    this.renderSavedFilters(savedFilters);
+                } catch (error) {
+                    console.error('Failed to load saved filters:', error);
+                }
+            }
+
+            renderSavedFilters(filters) {
+                const container = document.getElementById('saved-filters-list');
+                container.innerHTML = '';
+
+                filters.forEach(filter => {
+                    const filterEl = document.createElement('div');
+                    filterEl.className = 'saved-filter-item';
+                    filterEl.innerHTML = `
+                        <span>${filter.name}</span>
+                        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: #999; cursor: pointer;">×</button>
+                    `;
+                    filterEl.addEventListener('click', () => {
+                        this.applySavedFilter(filter);
+                    });
+                    container.appendChild(filterEl);
+                });
+            }
+
+            applySavedFilter(filter) {
+                this.currentFilters = filter.filters;
+                this.filterModal.setFilters(filter.filters);
+                if (this.currentQuery.trim()) {
+                    this.performSearch();
+                }
+            }
+
+            async saveCurrentFilter() {
+                const name = prompt('Enter a name for this filter:');
+                if (!name) return;
+
+                try {
+                    await this.filterService.saveFilter({
+                        name: name,
+                        filters: this.currentFilters,
+                        query: this.currentQuery
+                    });
+                    this.loadSavedFilters();
+                    this.showSuccess('Filter saved successfully.');
+                } catch (error) {
+                    console.error('Failed to save filter:', error);
+                    this.showError('Failed to save filter.');
+                }
+            }
+
+            showSuccess(message) {
+                // Simple success notification
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #28a745;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+
+            showError(message) {
+                // Simple error notification
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #dc3545;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 5000);
+            }
+        }
+
+        // Initialize search page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new SearchPage();
+        });
+    </script>
+</body>
+</html>

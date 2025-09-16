@@ -8,3 +8,8 @@ export * from './board-page';
 export * from './board-page-dnd';
 export * from './search-page';
 export * from './toast-alert-demo-page';
+export * from './vibe-notification-demo-page';
+export * from './vibe-layout-demo-page';
+export * from './vibe-navigation-demo-page';
+export * from './vibe-table-demo-page';
+export * from './vibe-board-demo-page';

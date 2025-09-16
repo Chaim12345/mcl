@@ -1,0 +1,643 @@
+package services
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"sync"
+	"testing"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+type PerformanceTestSuite struct {
+	cache        *RedisCacheService
+	itemService  *ItemService
+	boardService *BoardService
+	userService  *UserService
+}
+
+type PerformanceMetrics struct {
+	Operation     string
+	Duration      time.Duration
+	Throughput    float64
+	MemoryUsage   uint64
+	ErrorRate     float64
+	ResponseTime  time.Duration
+	Concurrency   int
+	TotalRequests int
+	FailedRequests int
+}
+
+type LoadTestResult struct {
+	Name           string
+	TotalRequests  int
+	FailedRequests int
+	Duration       time.Duration
+	Throughput     float64
+	AvgLatency     time.Duration
+	P95Latency     time.Duration
+	P99Latency     time.Duration
+	MaxLatency     time.Duration
+}
+
+type BenchmarkResult struct {
+	Name         string
+	Iterations   int
+	TotalTime    time.Duration
+	AverageTime  time.Duration
+	MinTime      time.Duration
+	MaxTime      time.Duration
+	MemoryBefore uint64
+	MemoryAfter  uint64
+}
+
+func NewPerformanceTestSuite(cache *RedisCacheService, itemService *ItemService, boardService *BoardService, userService *UserService) *PerformanceTestSuite {
+	return &PerformanceTestSuite{
+		cache:        cache,
+		itemService:  itemService,
+		boardService: boardService,
+		userService:  userService,
+	}
+}
+
+func (pts *PerformanceTestSuite) RunAllBenchmarks(ctx context.Context) map[string]BenchmarkResult {
+	results := make(map[string]BenchmarkResult)
+
+	// Cache Performance Tests
+	results["cache_set"] = pts.BenchmarkCacheSet(ctx)
+	results["cache_get"] = pts.BenchmarkCacheGet(ctx)
+	results["cache_delete"] = pts.BenchmarkCacheDelete(ctx)
+	
+	// Database Performance Tests
+	results["item_create"] = pts.BenchmarkItemCreate(ctx)
+	results["item_get"] = pts.BenchmarkItemGet(ctx)
+	results["item_update"] = pts.BenchmarkItemUpdate(ctx)
+	results["item_search"] = pts.BenchmarkItemSearch(ctx)
+	
+	// Service Performance Tests
+	results["board_operations"] = pts.BenchmarkBoardOperations(ctx)
+	results["user_operations"] = pts.BenchmarkUserOperations(ctx)
+	
+	return results
+}
+
+func (pts *PerformanceTestSuite) BenchmarkCacheSet(ctx context.Context) BenchmarkResult {
+	const iterations = 10000
+	data := map[string]interface{}{
+		"key":   "value",
+		"count": 42,
+		"data":  "test data",
+	}
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		key := fmt.Sprintf("test:key:%d", i)
+		err := pts.cache.Set(ctx, key, data, 5*time.Minute)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "cache_set",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkCacheGet(ctx context.Context) BenchmarkResult {
+	const iterations = 10000
+	
+	// Pre-populate cache
+	for i := 0; i < 1000; i++ {
+		key := fmt.Sprintf("test:key:%d", i)
+		data := map[string]interface{}{"value": i}
+		pts.cache.Set(ctx, key, data, 5*time.Minute)
+	}
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		key := fmt.Sprintf("test:key:%d", i%1000)
+		var result map[string]interface{}
+		_, err := pts.cache.Get(ctx, key, &result)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "cache_get",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkCacheDelete(ctx context.Context) BenchmarkResult {
+	const iterations = 10000
+	
+	// Pre-populate cache
+	for i := 0; i < 1000; i++ {
+		key := fmt.Sprintf("test:key:%d", i)
+		data := map[string]interface{}{"value": i}
+		pts.cache.Set(ctx, key, data, 5*time.Minute)
+	}
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		key := fmt.Sprintf("test:key:%d", i%1000)
+		err := pts.cache.Delete(ctx, key)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "cache_delete",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkItemCreate(ctx context.Context) BenchmarkResult {
+	const iterations = 1000
+	
+	// Create test board
+	boardID := primitive.NewObjectID()
+	userID := primitive.NewObjectID()
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		item := &Item{
+			ID:      primitive.NewObjectID(),
+			BoardID: boardID,
+			Title:   fmt.Sprintf("Test Item %d", i),
+			Content: fmt.Sprintf("Test content for item %d", i),
+			Position: float64(i * 1000),
+			CreatedBy: userID,
+			Fields: map[string]interface{}{
+				"status": "todo",
+				"priority": "medium",
+			},
+		}
+		
+		_, err := pts.itemService.CreateItem(ctx, item)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "item_create",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkItemGet(ctx context.Context) BenchmarkResult {
+	const iterations = 10000
+	
+	// Create test item
+	boardID := primitive.NewObjectID()
+	item := &Item{
+		ID:      primitive.NewObjectID(),
+		BoardID: boardID,
+		Title:   "Test Item",
+		Content: "Test content",
+		Position: 1000,
+		CreatedBy: primitive.NewObjectID(),
+	}
+	
+	_, err := pts.itemService.CreateItem(ctx, item)
+	if err != nil {
+		log.Printf("Failed to create test item: %v", err)
+		return BenchmarkResult{
+			Name: "item_get",
+			Iterations: 0,
+		}
+	}
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		_, err := pts.itemService.GetItem(ctx, item.ID.Hex())
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "item_get",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkItemUpdate(ctx context.Context) BenchmarkResult {
+	const iterations = 1000
+	
+	// Create test item
+	boardID := primitive.NewObjectID()
+	item := &Item{
+		ID:      primitive.NewObjectID(),
+		BoardID: boardID,
+		Title:   "Test Item",
+		Content: "Test content",
+		Position: 1000,
+		CreatedBy: primitive.NewObjectID(),
+	}
+	
+	createdItem, err := pts.itemService.CreateItem(ctx, item)
+	if err != nil {
+		log.Printf("Failed to create test item: %v", err)
+		return BenchmarkResult{
+			Name: "item_update",
+			Iterations: 0,
+		}
+	}
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		update := map[string]interface{}{
+			"title": fmt.Sprintf("Updated Item %d", i),
+			"content": fmt.Sprintf("Updated content %d", i),
+		}
+		_, err := pts.itemService.UpdateItem(ctx, createdItem.ID.Hex(), update)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "item_update",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkItemSearch(ctx context.Context) BenchmarkResult {
+	const iterations = 1000
+	
+	// Create test items
+	boardID := primitive.NewObjectID()
+	userID := primitive.NewObjectID()
+	
+	for i := 0; i < 100; i++ {
+		item := &Item{
+			ID:      primitive.NewObjectID(),
+			BoardID: boardID,
+			Title:   fmt.Sprintf("Search Test Item %d", i),
+			Content: fmt.Sprintf("Content for search item %d", i),
+			Position: float64(i * 1000),
+			CreatedBy: userID,
+		}
+		pts.itemService.CreateItem(ctx, item)
+	}
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		filters := map[string]interface{}{
+			"board_id": boardID.Hex(),
+			"title":    fmt.Sprintf("Search Test Item %d", i%100),
+		}
+		_, err := pts.itemService.SearchItems(ctx, filters)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "item_search",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkBoardOperations(ctx context.Context) BenchmarkResult {
+	const iterations = 500
+	
+	userID := primitive.NewObjectID()
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		board := &Board{
+			ID:        primitive.NewObjectID(),
+			Name:      fmt.Sprintf("Test Board %d", i),
+			WorkspaceID: primitive.NewObjectID(),
+			CreatedBy:   userID,
+		}
+		_, err := pts.boardService.CreateBoard(ctx, board)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "board_operations",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) BenchmarkUserOperations(ctx context.Context) BenchmarkResult {
+	const iterations = 500
+	
+	start := time.Now()
+	var minTime, maxTime time.Duration
+	minTime = time.Hour
+	
+	for i := 0; i < iterations; i++ {
+		opStart := time.Now()
+		user := &User{
+			ID:        primitive.NewObjectID(),
+			Email:     fmt.Sprintf("user%d@example.com", i),
+			FirstName: fmt.Sprintf("User%d", i),
+			LastName:  "Test",
+			Password:  "password123",
+		}
+		_, err := pts.userService.CreateUser(ctx, user)
+		opDuration := time.Since(opStart)
+		
+		if err != nil {
+			continue
+		}
+		
+		if opDuration < minTime {
+			minTime = opDuration
+		}
+		if opDuration > maxTime {
+			maxTime = opDuration
+		}
+	}
+	
+	totalTime := time.Since(start)
+	averageTime := totalTime / iterations
+	
+	return BenchmarkResult{
+		Name:        "user_operations",
+		Iterations:  iterations,
+		TotalTime:   totalTime,
+		AverageTime: averageTime,
+		MinTime:     minTime,
+		MaxTime:     maxTime,
+	}
+}
+
+func (pts *PerformanceTestSuite) RunLoadTest(ctx context.Context, testName string, numUsers, requestsPerUser int, targetFunc func(context.Context) error) LoadTestResult {
+	var wg sync.WaitGroup
+	results := make(chan LoadTestResult, numUsers)
+	errors := make(chan error, numUsers*requestsPerUser)
+	
+	start := time.Now()
+	
+	// Launch concurrent users
+	for i := 0; i < numUsers; i++ {
+		wg.Add(1)
+		go func(userID int) {
+			defer wg.Done()
+			
+			var userSuccess, userErrors int
+			userStart := time.Now()
+			var latencies []time.Duration
+			
+			for j := 0; j < requestsPerUser; j++ {
+				reqStart := time.Now()
+				err := targetFunc(ctx)
+				reqDuration := time.Since(reqStart)
+				
+				latencies = append(latencies, reqDuration)
+				if err != nil {
+					userErrors++
+					errors <- err
+				} else {
+					userSuccess++
+				}
+			}
+			
+			// Calculate percentiles
+			sortLatencies(latencies)
+			
+			userTime := time.Since(userStart)
+			userResult := LoadTestResult{
+				Name:           fmt.Sprintf("%s_user_%d", testName, userID),
+				TotalRequests:  requestsPerUser,
+				FailedRequests: userErrors,
+				Duration:       userTime,
+				Throughput:     float64(requestsPerUser) / userTime.Seconds(),
+				AvgLatency:     userTime / time.Duration(requestsPerUser),
+				P95Latency:     latencies[int(float64(len(latencies))*0.95)],
+				P99Latency:     latencies[int(float64(len(latencies))*0.99)],
+				MaxLatency:     latencies[len(latencies)-1],
+			}
+			
+			results <- userResult
+		}(i)
+	}
+	
+	wg.Wait()
+	close(results)
+	close(errors)
+	
+	// Aggregate results
+	var totalRequests, totalErrors, totalUsers int
+	var totalTime time.Duration
+	
+	for result := range results {
+		totalRequests += result.TotalRequests
+		totalErrors += result.FailedRequests
+		totalUsers++
+		if result.Duration > totalTime {
+			totalTime = result.Duration
+		}
+	}
+	
+	return LoadTestResult{
+		Name:           testName,
+		TotalRequests:  totalRequests,
+		FailedRequests: totalErrors,
+		Duration:       time.Since(start),
+		Throughput:     float64(totalRequests) / time.Since(start).Seconds(),
+	}
+}
+
+func sortLatencies(latencies []time.Duration) {
+	// Simple bubble sort for small datasets
+	for i := 0; i < len(latencies)-1; i++ {
+		for j := 0; j < len(latencies)-i-1; j++ {
+			if latencies[j] > latencies[j+1] {
+				latencies[j], latencies[j+1] = latencies[j+1], latencies[j]
+			}
+		}
+	}
+}
+
+func (pts *PerformanceTestSuite) GenerateReport(results map[string]BenchmarkResult) string {
+	report := "Performance Test Suite Report\n"
+	report += "=============================\n\n"
+	
+	for name, result := range results {
+		report += fmt.Sprintf("%s:\n", name)
+		report += fmt.Sprintf("  Iterations: %d\n", result.Iterations)
+		report += fmt.Sprintf("  Total Time: %v\n", result.TotalTime)
+		report += fmt.Sprintf("  Average Time: %v\n", result.AverageTime)
+		report += fmt.Sprintf("  Min Time: %v\n", result.MinTime)
+		report += fmt.Sprintf("  Max Time: %v\n", result.MaxTime)
+		report += fmt.Sprintf("  Average Throughput: %.2f ops/sec\n\n", float64(result.Iterations)/result.TotalTime.Seconds())
+	}
+	
+	return report
+}

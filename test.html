@@ -1,0 +1,166 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Monday.com Clone - Board&lt;/title&gt;
+    
+    &lt;!-- CSS Styles --&gt;
+    &lt;link rel="stylesheet" href="./css/base.css"&gt;
+    &lt;link rel="stylesheet" href="./css/board.css"&gt;
+    &lt;link rel="stylesheet" href="./css/components.css"&gt;
+    
+    &lt;!-- Favicons --&gt;
+    &lt;link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"&gt;
+    &lt;link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"&gt;
+    &lt;link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"&gt;
+    &lt;link rel="manifest" href="/site.webmanifest"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;!-- Navigation Bar --&gt;
+    &lt;nav class="navbar"&gt;
+        &lt;div class="nav-container"&gt;
+            &lt;div class="nav-logo"&gt;
+                &lt;a href="/"&gt;Kirom&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;ul class="nav-menu"&gt;
+                &lt;li class="nav-item"&gt;
+                    &lt;a href="/dashboard" class="nav-link" data-page="dashboard"&gt;Dashboard&lt;/a&gt;
+                &lt;/li&gt;
+                &lt;li class="nav-item"&gt;
+                    &lt;a href="/boards" class="nav-link active" data-page="boards"&gt;Boards&lt;/a&gt;
+                &lt;/li&gt;
+                &lt;li class="nav-item"&gt;
+                    &lt;a href="/calendar" class="nav-link" data-page="calendar"&gt;Calendar&lt;/a&gt;
+                &lt;/li&gt;
+            &lt;/ul&gt;
+            &lt;div class="nav-actions"&gt;
+                &lt;select id="board-switcher" class="board-selector"&gt;
+                    &lt;option value=""&gt;Select a board&lt;/option&gt;
+                    &lt;option value="1"&gt;Project Alpha&lt;/option&gt;
+                    &lt;option value="2"&gt;Marketing Campaign&lt;/option&gt;
+                    &lt;option value="3"&gt;Product Development&lt;/option&gt;
+                &lt;/select&gt;
+                &lt;button id="logout-button" class="btn btn-secondary"&gt;Logout&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/nav&gt;
+
+    &lt;!-- Main Content --&gt;
+    &lt;main class="main-content"&gt;
+        &lt;!-- Error and Success Messages --&gt;
+        &lt;div id="error-message" class="alert alert-error" style="display: none;"&gt;&lt;/div&gt;
+        &lt;div id="success-message" class="alert alert-success" style="display: none;"&gt;&lt;/div&gt;
+        
+        &lt;!-- Board Container --&gt;
+        &lt;div id="board-container" data-board-id="1"&gt;
+            &lt;!-- Board will be rendered here by JavaScript --&gt;
+        &lt;/div&gt;
+    &lt;/main&gt;
+
+    &lt;!-- Footer --&gt;
+    &lt;footer class="footer"&gt;
+        &lt;div class="footer-content"&gt;
+            &lt;p&gt;&amp;copy; 2023 Kirom. All rights reserved.&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/footer&gt;
+
+    &lt;!-- JavaScript --&gt;
+    &lt;script type="module"&gt;
+        // Sample board data for demonstration
+        const sampleBoardData = {
+            id: '1',
+            name: 'Project Alpha',
+            columns: [
+                {
+                    id: 'col-1',
+                    name: 'To Do',
+                    tasks: [
+                        {
+                            id: 'task-1',
+                            title: 'Research competitors',
+                            description: 'Analyze competitor products and features',
+                            priority: 'high',
+                            assignee: {
+                                name: 'John Doe',
+                                avatar: './assets/images/avatar1.jpg'
+                            }
+                        },
+                        {
+                            id: 'task-2',
+                            title: 'Create wireframes',
+                            description: 'Design initial wireframes for the new feature',
+                            priority: 'medium',
+                            assignee: {
+                                name: 'Jane Smith',
+                                avatar: './assets/images/avatar2.jpg'
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'col-2',
+                    name: 'In Progress',
+                    tasks: [
+                        {
+                            id: 'task-3',
+                            title: 'Develop authentication system',
+                            description: 'Implement user login and registration',
+                            priority: 'high',
+                            assignee: {
+                                name: 'Mike Johnson',
+                                avatar: './assets/images/avatar3.jpg'
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'col-3',
+                    name: 'Review',
+                    tasks: [
+                        {
+                            id: 'task-4',
+                            title: 'Code review for API endpoints',
+                            description: 'Review and test all new API endpoints',
+                            priority: 'medium',
+                            assignee: {
+                                name: 'Sarah Williams',
+                                avatar: './assets/images/avatar4.jpg'
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'col-4',
+                    name: 'Done',
+                    tasks: [
+                        {
+                            id: 'task-5',
+                            title: 'Setup project repository',
+                            description: 'Create GitHub repository and configure CI/CD',
+                            priority: 'low',
+                            assignee: {
+                                name: 'David Brown',
+                                avatar: './assets/images/avatar5.jpg'
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Dynamically import and initialize the Board component
+        import('./js/components/board/Board.js').then(({ default: Board }) => {
+            // Initialize board with sample data
+            const board = new Board('board-container', sampleBoardData);
+            
+            // Make board globally accessible for debugging
+            window.board = board;
+        }).catch(error => {
+            console.error('Error loading Board component:', error);
+            document.getElementById('board-container').innerHTML = 
+                '&lt;div class="error-message"&gt;Failed to load board component&lt;/div&gt;';
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;

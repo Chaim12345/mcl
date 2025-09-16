@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity & Analytics - Kirom</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        .activity-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .activity-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .tab-button {
+            padding: 12px 24px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        .tab-button:hover {
+            background: #f5f5f5;
+        }
+        .tab-button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .analytics-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .card-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .card-subtitle {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .chart-container {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 5px;
+            color: #666;
+        }
+        .activity-timeline {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .timeline-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        .activity-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        .activity-item:hover {
+            background: #f8f9fa;
+        }
+        .activity-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .activity-content {
+            flex: 1;
+        }
+        .activity-header-text {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .activity-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .activity-time {
+            color: #999;
+            font-size: 0.8em;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .leaderboard {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+        .leaderboard-item:hover {
+            background: #f8f9fa;
+        }
+        .leaderboard-rank {
+            font-weight: bold;
+            color: #007bff;
+            width: 30px;
+        }
+        .leaderboard-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .leaderboard-info {
+            flex: 1;
+        }
+        .leaderboard-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .leaderboard-score {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">Kirom</h1>
+                <nav class="nav-menu">
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                    <a href="/boards" class="nav-link">Boards</a>
+                    <a href="/workspaces" class="nav-link">Workspaces</a>
+                    <a href="/users" class="nav-link">Users</a>
+                    <a href="/activity" class="nav-link active">Activity</a>
+                    <a href="/search" class="nav-link">Search</a>
+                    <a href="/calendar" class="nav-link">Calendar</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <img src="/assets/images/avatar1.jpg" alt="User" class="avatar">
+                    <span class="user-name">John Doe</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="activity-container">
+                <div class="activity-header">
+                    <h2>Activity & Analytics</h2>
+                    <div class="date-range-selector">
+                        <select id="date-range" class="filter-select">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="365">Last year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="activity-tabs">
+                    <button class="tab-button active" data-tab="analytics">Analytics</button>
+                    <button class="tab-button" data-tab="timeline">Activity Timeline</button>
+                    <button class="tab-button" data-tab="leaderboard">Leaderboard</button>
+                    <button class="tab-button" data-tab="reports">Reports</button>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analytics-tab" class="tab-content active">
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div class="card-title">Total Items</div>
+                            </div>
+                            <div class="card-value" id="total-items">0</div>
+                            <div class="card-subtitle">Across all boards</div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div class="card-title">Completed Items</div>
+                            </div>
+                            <div class="card-value" id="completed-items">0</div>
+                            <div class="card-subtitle">This period</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="completion-progress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div class="card-title">Active Users</div>
+                            </div>
+                            <div class="card-value" id="active-users-count">0</div>
+                            <div class="card-subtitle">This period</div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div class="card-title">Average Response Time</div>
+                            </div>
+                            <div class="card-value" id="avg-response-time">0h</div>
+                            <div class="card-subtitle">For item completion</div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div class="card-title">Items by Status</div>
+                            </div>
+                            <div class="chart-container" id="status-chart">
+                                Chart will be rendered here
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <div class="card-title">Activity Over Time</div>
+                            </div>
+                            <div class="chart-container" id="activity-chart">
+                                Chart will be rendered here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Timeline Tab -->
+                <div id="timeline-tab" class="tab-content">
+                    <div class="timeline-filters">
+                        <select class="filter-select" id="timeline-board-filter">
+                            <option value="all">All Boards</option>
+                        </select>
+                        <select class="filter-select" id="timeline-user-filter">
+                            <option value="all">All Users</option>
+                        </select>
+                        <select class="filter-select" id="timeline-action-filter">
+                            <option value="all">All Actions</option>
+                            <option value="create">Created</option>
+                            <option value="update">Updated</option>
+                            <option value="delete">Deleted</option>
+                            <option value="comment">Commented</option>
+                        </select>
+                    </div>
+                    
+                    <div class="activity-timeline" id="activity-timeline-container">
+                        <!-- Timeline will be populated by ActivityTimeline component -->
+                    </div>
+                </div>
+
+                <!-- Leaderboard Tab -->
+                <div id="leaderboard-tab" class="tab-content">
+                    <div class="leaderboard">
+                        <h3>Top Contributors</h3>
+                        <div id="leaderboard-container">
+                            <!-- Leaderboard will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports-tab" class="tab-content">
+                    <div class="analytics-card">
+                        <div class="card-header">
+                            <div class="card-title">Generate Reports</div>
+                        </div>
+                        <p>Export detailed analytics and activity reports.</p>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary" id="export-csv">Export CSV</button>
+                            <button class="btn btn-secondary" id="export-pdf">Export PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load Components -->
+    <script type="module">
+        import { ActivityTimeline } from '/js/components/activity/ActivityTimeline.js';
+        import { ActivityAnalytics } from '/js/components/activity/ActivityAnalytics.js';
+        import { UserActivity } from '/js/components/user/UserActivity.js';
+        import { ActivityService } from '/js/services/activity.js';
+
+        class ActivityPage {
+            constructor() {
+                this.activityService = new ActivityService();
+                this.activityTimeline = null;
+                this.activityAnalytics = null;
+                this.userActivity = null;
+                this.currentTab = 'analytics';
+                this.dateRange = 30;
+                this.init();
+            }
+
+            init() {
+                this.setupComponents();
+                this.setupEventListeners();
+                this.loadAnalytics();
+            }
+
+            setupComponents() {
+                // Initialize activity timeline component
+                const timelineContainer = document.getElementById('activity-timeline-container');
+                this.activityTimeline = new ActivityTimeline(timelineContainer, {
+                    showFilters: true,
+                    limit: 50
+                });
+
+                // Initialize activity analytics component
+                this.activityAnalytics = new ActivityAnalytics();
+
+                // Initialize user activity component
+                this.userActivity = new UserActivity();
+            }
+
+            setupEventListeners() {
+                // Tab switching
+                document.querySelectorAll('.tab-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const tab = e.target.dataset.tab;
+                        this.switchTab(tab);
+                    });
+                });
+
+                // Date range selector
+                document.getElementById('date-range').addEventListener('change', (e) => {
+                    this.dateRange = parseInt(e.target.value);
+                    this.loadAnalytics();
+                });
+
+                // Timeline filters
+                document.getElementById('timeline-board-filter').addEventListener('change', () => {
+                    this.updateTimelineFilters();
+                });
+                document.getElementById('timeline-user-filter').addEventListener('change', () => {
+                    this.updateTimelineFilters();
+                });
+                document.getElementById('timeline-action-filter').addEventListener('change', () => {
+                    this.updateTimelineFilters();
+                });
+
+                // Export buttons
+                document.getElementById('export-csv').addEventListener('click', () => {
+                    this.exportData('csv');
+                });
+                document.getElementById('export-pdf').addEventListener('click', () => {
+                    this.exportData('pdf');
+                });
+            }
+
+            switchTab(tab) {
+                // Update active tab button
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tab);
+                });
+
+                // Show/hide tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tab + '-tab').classList.add('active');
+
+                this.currentTab = tab;
+
+                // Load tab-specific data
+                switch (tab) {
+                    case 'timeline':
+                        this.loadTimeline();
+                        break;
+                    case 'leaderboard':
+                        this.loadLeaderboard();
+                        break;
+                    case 'analytics':
+                        this.loadAnalytics();
+                        break;
+                }
+            }
+
+            async loadAnalytics() {
+                try {
+                    const analytics = await this.activityAnalytics.getAnalytics(this.dateRange);
+                    
+                    // Update analytics cards
+                    document.getElementById('total-items').textContent = analytics.totalItems || 0;
+                    document.getElementById('completed-items').textContent = analytics.completedItems || 0;
+                    document.getElementById('active-users-count').textContent = analytics.activeUsers || 0;
+                    document.getElementById('avg-response-time').textContent = 
+                        analytics.avgResponseTime ? `${analytics.avgResponseTime}h` : '0h';
+
+                    // Update completion progress
+                    const completionRate = analytics.totalItems > 0 
+                        ? (analytics.completedItems / analytics.totalItems) * 100 
+                        : 0;
+                    document.getElementById('completion-progress').style.width = `${completionRate}%`;
+
+                    // TODO: Render charts
+                    this.renderCharts(analytics);
+
+                } catch (error) {
+                    console.error('Failed to load analytics:', error);
+                    this.showError('Failed to load analytics data.');
+                }
+            }
+
+            async loadTimeline() {
+                try {
+                    await this.activityTimeline.loadActivities();
+                    await this.populateTimelineFilters();
+                } catch (error) {
+                    console.error('Failed to load timeline:', error);
+                    this.showError('Failed to load activity timeline.');
+                }
+            }
+
+            async loadLeaderboard() {
+                try {
+                    const leaderboard = await this.userActivity.getLeaderboard(this.dateRange);
+                    this.renderLeaderboard(leaderboard);
+                } catch (error) {
+                    console.error('Failed to load leaderboard:', error);
+                    this.showError('Failed to load leaderboard data.');
+                }
+            }
+
+            async populateTimelineFilters() {
+                try {
+                    // Populate board filter
+                    const boards = await this.activityService.getBoards();
+                    const boardFilter = document.getElementById('timeline-board-filter');
+                    boardFilter.innerHTML = '<option value="all">All Boards</option>';
+                    boards.forEach(board => {
+                        const option = document.createElement('option');
+                        option.value = board.id;
+                        option.textContent = board.name;
+                        boardFilter.appendChild(option);
+                    });
+
+                    // Populate user filter
+                    const users = await this.activityService.getUsers();
+                    const userFilter = document.getElementById('timeline-user-filter');
+                    userFilter.innerHTML = '<option value="all">All Users</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name;
+                        userFilter.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Failed to populate timeline filters:', error);
+                }
+            }
+
+            updateTimelineFilters() {
+                const filters = {
+                    boardId: document.getElementById('timeline-board-filter').value,
+                    userId: document.getElementById('timeline-user-filter').value,
+                    action: document.getElementById('timeline-action-filter').value
+                };
+
+                this.activityTimeline.setFilters(filters);
+            }
+
+            renderLeaderboard(leaderboard) {
+                const container = document.getElementById('leaderboard-container');
+                container.innerHTML = '';
+
+                leaderboard.forEach((user, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'leaderboard-item';
+                    item.innerHTML = `
+                        <div class="leaderboard-rank">#${index + 1}</div>
+                        <img src="${user.avatar || '/assets/images/avatar1.jpg'}" alt="${user.name}" class="leaderboard-avatar">
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${user.name}</div>
+                            <div class="leaderboard-score">${user.score} points</div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            renderCharts(analytics) {
+                // Simple placeholder for charts - in a real app, you'd use a charting library
+                document.getElementById('status-chart').innerHTML = `
+                    <div style="text-align: center;">
+                        <div>Status Distribution</div>
+                        <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                            To Do: ${analytics.statusCounts?.todo || 0}<br>
+                            In Progress: ${analytics.statusCounts?.inProgress || 0}<br>
+                            Done: ${analytics.statusCounts?.done || 0}
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('activity-chart').innerHTML = `
+                    <div style="text-align: center;">
+                        <div>Activity Trend</div>
+                        <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                            Daily average: ${analytics.dailyAverage || 0} activities
+                        </div>
+                    </div>
+                `;
+            }
+
+            async exportData(format) {
+                try {
+                    const data = await this.activityService.exportData({
+                        format: format,
+                        dateRange: this.dateRange,
+                        tab: this.currentTab
+                    });
+
+                    // Create download link
+                    const blob = new Blob([data], { 
+                        type: format === 'csv' ? 'text/csv' : 'application/pdf' 
+                    });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `activity-report-${new Date().toISOString().split('T')[0]}.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    this.showSuccess(`Report exported as ${format.toUpperCase()}.`);
+                } catch (error) {
+                    console.error('Failed to export data:', error);
+                    this.showError('Failed to export data.');
+                }
+            }
+
+            showSuccess(message) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #28a745;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+
+            showError(message) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #dc3545;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 5000);
+            }
+        }
+
+        // Initialize activity page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ActivityPage();
+        });
+    </script>
+</body>
+</html>

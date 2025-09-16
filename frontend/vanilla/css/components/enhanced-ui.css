@@ -1,0 +1,495 @@
+/* Enhanced UI Components for Monday.com-like experience */
+
+/* Drag and Drop Styling */
+.board-item {
+    cursor: grab;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.board-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.board-item.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+    cursor: grabbing;
+}
+
+.column-items.drag-over {
+    background-color: #f0f8ff;
+    border: 2px dashed #4a90e2;
+    border-radius: 8px;
+}
+
+.drag-indicator {
+    height: 4px;
+    margin: 8px 0;
+    background: linear-gradient(90deg, #4a90e2, #357abd);
+    border-radius: 2px;
+    opacity: 0.8;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+/* Quick Search Modal */
+.quick-search-modal {
+    width: 600px;
+    max-height: 70vh;
+}
+
+.quick-search-content {
+    padding: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.search-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+    background-color: #f5f6f8;
+}
+
+.result-icon {
+    font-size: 20px;
+    margin-right: 12px;
+    width: 24px;
+    text-align: center;
+}
+
+.result-content {
+    flex: 1;
+}
+
+.result-title {
+    font-weight: 500;
+    color: #323338;
+    margin-bottom: 2px;
+}
+
+.result-subtitle {
+    font-size: 12px;
+    color: #676879;
+}
+
+/* Keyboard Shortcuts Modal */
+.keyboard-shortcuts-modal {
+    width: 500px;
+}
+
+.shortcuts-content {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.shortcuts-section h4 {
+    margin: 0 0 12px 0;
+    color: #323338;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.shortcut-item:last-child {
+    border-bottom: none;
+}
+
+.shortcut-item kbd {
+    background: #f5f6f8;
+    border: 1px solid #d0d4da;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #676879;
+}
+
+.shortcut-item span {
+    color: #323338;
+    font-size: 13px;
+}
+
+/* Enhanced Task Cards */
+.task-card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.task-card:hover {
+    border-color: #4a90e2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.task-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.task-title {
+    font-weight: 500;
+    color: #323338;
+    margin: 0;
+    flex: 1;
+}
+
+.task-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge--todo {
+    background: #e4e6ea;
+    color: #676879;
+}
+
+.status-badge--in-progress {
+    background: #fff4e6;
+    color: #d86614;
+}
+
+.status-badge--done {
+    background: #e6f7ff;
+    color: #1890ff;
+}
+
+.task-description {
+    color: #676879;
+    font-size: 13px;
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.task-meta {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.task-context {
+    font-size: 12px;
+    color: #676879;
+    margin-bottom: 8px;
+}
+
+.task-separator {
+    margin: 0 4px;
+}
+
+.task-due-date {
+    font-size: 12px;
+    color: #676879;
+}
+
+.task-due-date.overdue {
+    color: #d32f2f;
+    font-weight: 500;
+}
+
+.task-due-date.due-today {
+    color: #ff9800;
+    font-weight: 500;
+}
+
+.task-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+/* Enhanced Board Items */
+.board-item {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.board-item .item-priority {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.item-priority.high {
+    background: #d32f2f;
+}
+
+.item-priority.medium {
+    background: #ff9800;
+}
+
+.item-priority.low {
+    background: #4caf50;
+}
+
+.item-priority.critical {
+    background: #9c27b0;
+}
+
+.item-title {
+    font-weight: 500;
+    color: #323338;
+    margin-bottom: 4px;
+    padding-right: 20px;
+}
+
+.item-assignee {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.assignee-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #4a90e2;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.assignee-name {
+    font-size: 11px;
+    color: #676879;
+}
+
+/* Enhanced Buttons */
+.btn {
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-primary {
+    background: #4a90e2;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #357abd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+.btn-secondary {
+    background: #f5f6f8;
+    color: #323338;
+    border: 1px solid #e1e5e9;
+}
+
+.btn-secondary:hover {
+    background: #e8eaed;
+    border-color: #d0d4da;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #4a90e2;
+    border: 1px solid #4a90e2;
+}
+
+.btn-outline:hover {
+    background: #4a90e2;
+    color: white;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+/* Column Headers */
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e1e5e9;
+    background: #f8f9fb;
+}
+
+.column-title {
+    font-weight: 600;
+    color: #323338;
+    margin: 0;
+}
+
+.column-count {
+    background: #e1e5e9;
+    color: #676879;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.column-menu-btn {
+    background: none;
+    border: none;
+    color: #676879;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.column-menu-btn:hover {
+    background: #e1e5e9;
+    color: #323338;
+}
+
+/* Loading States */
+.loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loading::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e1e5e9;
+    border-top: 2px solid #4a90e2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+}
+
+.notification.success {
+    background: #4caf50;
+}
+
+.notification.error {
+    background: #d32f2f;
+}
+
+.notification.warning {
+    background: #ff9800;
+}
+
+.notification.info {
+    background: #4a90e2;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .shortcuts-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-search-modal {
+        width: 90vw;
+        margin: 5vh auto;
+    }
+    
+    .keyboard-shortcuts-modal {
+        width: 90vw;
+    }
+    
+    .task-card {
+        margin-bottom: 12px;
+    }
+    
+    .task-actions {
+        flex-direction: column;
+    }
+}

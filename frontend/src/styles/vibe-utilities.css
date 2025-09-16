@@ -1,0 +1,225 @@
+/**
+ * Vibe Design System Utilities
+ * CSS utilities using Vibe design tokens instead of Tailwind classes
+ */
+
+/* Spacing Utilities */
+.vibe-p-xs { padding: var(--vibe-spacing-xs); }
+.vibe-p-sm { padding: var(--vibe-spacing-sm); }
+.vibe-p-md { padding: var(--vibe-spacing-md); }
+.vibe-p-lg { padding: var(--vibe-spacing-lg); }
+.vibe-p-xl { padding: var(--vibe-spacing-xl); }
+
+.vibe-m-xs { margin: var(--vibe-spacing-xs); }
+.vibe-m-sm { margin: var(--vibe-spacing-sm); }
+.vibe-m-md { margin: var(--vibe-spacing-md); }
+.vibe-m-lg { margin: var(--vibe-spacing-lg); }
+.vibe-m-xl { margin: var(--vibe-spacing-xl); }
+
+.vibe-gap-xs { gap: var(--vibe-spacing-xs); }
+.vibe-gap-sm { gap: var(--vibe-spacing-sm); }
+.vibe-gap-md { gap: var(--vibe-spacing-md); }
+.vibe-gap-lg { gap: var(--vibe-spacing-lg); }
+.vibe-gap-xl { gap: var(--vibe-spacing-xl); }
+
+/* Typography Utilities */
+.vibe-text-xs { font-size: var(--vibe-font-size-xs); }
+.vibe-text-sm { font-size: var(--vibe-font-size-sm); }
+.vibe-text-md { font-size: var(--vibe-font-size-md); }
+.vibe-text-lg { font-size: var(--vibe-font-size-lg); }
+.vibe-text-xl { font-size: var(--vibe-font-size-xl); }
+
+.vibe-font-normal { font-weight: var(--vibe-font-weight-normal); }
+.vibe-font-medium { font-weight: var(--vibe-font-weight-medium); }
+.vibe-font-semibold { font-weight: var(--vibe-font-weight-semibold); }
+.vibe-font-bold { font-weight: var(--vibe-font-weight-bold); }
+
+.vibe-leading-tight { line-height: var(--vibe-line-height-tight); }
+.vibe-leading-normal { line-height: var(--vibe-line-height-normal); }
+.vibe-leading-relaxed { line-height: var(--vibe-line-height-relaxed); }
+
+/* Color Utilities */
+.vibe-text-primary { color: var(--primary-text-color); }
+.vibe-text-secondary { color: var(--secondary-text-color); }
+.vibe-text-tertiary { color: var(--tertiary-text-color); }
+
+.vibe-bg-primary { background-color: var(--primary-background-color); }
+.vibe-bg-secondary { background-color: var(--secondary-background-color); }
+.vibe-bg-tertiary { background-color: var(--tertiary-background-color); }
+.vibe-bg-surface { background-color: var(--surface-color); }
+
+.vibe-border-color { border-color: var(--border-color); }
+.vibe-border-ui { border-color: var(--border-color-ui); }
+
+/* Border Radius Utilities */
+.vibe-rounded-none { border-radius: var(--vibe-border-radius-none); }
+.vibe-rounded-sm { border-radius: var(--vibe-border-radius-sm); }
+.vibe-rounded-md { border-radius: var(--vibe-border-radius-md); }
+.vibe-rounded-lg { border-radius: var(--vibe-border-radius-lg); }
+.vibe-rounded-xl { border-radius: var(--vibe-border-radius-xl); }
+.vibe-rounded-full { border-radius: var(--vibe-border-radius-full); }
+
+/* Shadow Utilities */
+.vibe-shadow-none { box-shadow: var(--vibe-shadow-none); }
+.vibe-shadow-sm { box-shadow: var(--vibe-shadow-sm); }
+.vibe-shadow-md { box-shadow: var(--vibe-shadow-md); }
+.vibe-shadow-lg { box-shadow: var(--vibe-shadow-lg); }
+.vibe-shadow-xl { box-shadow: var(--vibe-shadow-xl); }
+
+/* Layout Utilities */
+.vibe-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--vibe-spacing-lg);
+}
+
+.vibe-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--vibe-border-radius-lg);
+  box-shadow: var(--vibe-shadow-sm);
+  padding: var(--vibe-spacing-lg);
+}
+
+.vibe-button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--vibe-border-radius-md);
+  font-weight: var(--vibe-font-weight-medium);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.vibe-button-base:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* Interactive States */
+.vibe-hover:hover {
+  background-color: var(--hover-color);
+}
+
+.vibe-selected {
+  background-color: var(--selected-color);
+}
+
+.vibe-focus:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* Accessibility Utilities */
+.vibe-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.vibe-focus-trap:focus {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .vibe-text-primary { color: var(--primary-text-color); }
+  .vibe-border-color { border-color: currentColor; }
+  .vibe-focus:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .vibe-button-base,
+  .vibe-hover {
+    transition: none;
+  }
+}
+
+/* Dark Mode Specific Adjustments */
+.dark-app-theme .vibe-card {
+  background-color: var(--surface-color-medium);
+  border-color: var(--border-color-ui);
+}
+
+.dark-app-theme .vibe-shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.dark-app-theme .vibe-shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Component-specific overrides */
+.vibe-form-field {
+  margin-bottom: var(--vibe-spacing-lg);
+}
+
+.vibe-form-label {
+  display: block;
+  font-size: var(--vibe-font-size-sm);
+  font-weight: var(--vibe-font-weight-medium);
+  color: var(--primary-text-color);
+  margin-bottom: var(--vibe-spacing-xs);
+}
+
+.vibe-form-error {
+  font-size: var(--vibe-font-size-xs);
+  color: var(--negative-color);
+  margin-top: var(--vibe-spacing-xs);
+}
+
+.vibe-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  border: none;
+  margin: var(--vibe-spacing-lg) 0;
+}
+
+/* Layout Grid */
+.vibe-grid {
+  display: grid;
+  gap: var(--vibe-spacing-lg);
+}
+
+.vibe-grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.vibe-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.vibe-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.vibe-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* Flexbox Utilities */
+.vibe-flex {
+  display: flex;
+}
+
+.vibe-flex-col {
+  flex-direction: column;
+}
+
+.vibe-items-center {
+  align-items: center;
+}
+
+.vibe-justify-center {
+  justify-content: center;
+}
+
+.vibe-justify-between {
+  justify-content: space-between;
+}
+
+.vibe-flex-1 {
+  flex: 1 1 0%;
+}

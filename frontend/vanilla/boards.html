@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monday.com Clone - Boards</title>
+    
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/components.css">
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">Kirom</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link" data-page="dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/boards" class="nav-link active" data-page="boards">Boards</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/calendar" class="nav-link" data-page="calendar">Calendar</a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <select id="board-switcher" class="board-selector">
+                    <option value="">Select a board</option>
+                    <option value="1">Project Alpha</option>
+                    <option value="2">Marketing Campaign</option>
+                    <option value="3">Product Development</option>
+                </select>
+                <button id="logout-button" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Error and Success Messages -->
+        <div id="error-message" class="alert alert-error" style="display: none;"></div>
+        <div id="success-message" class="alert alert-success" style="display: none;"></div>
+        
+        <!-- Board List Container -->
+        <div id="board-list-container">
+            <!-- Board list will be rendered here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2023 Kirom. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script type="module">
+        // Dynamically import and initialize the BoardList component
+        import('./js/components/board/BoardList.js').then(({ default: BoardList }) => {
+            // Initialize board list
+            const boardList = new BoardList('board-list-container');
+            
+            // Make board list globally accessible for debugging
+            window.boardList = boardList;
+        }).catch(error => {
+            console.error('Error loading BoardList component:', error);
+            document.getElementById('board-list-container').innerHTML = 
+                '<div class="error-message">Failed to load board list component</div>';
+        });
+    </script>
+</body>
+</html>

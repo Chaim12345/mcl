@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading States Demo - Go/Vanilla Port</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f9fafb;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h3 {
+            margin-top: 0;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .demo-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            background: #fafafa;
+        }
+
+        .demo-card h4 {
+            margin-top: 0;
+            color: #374151;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 4px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .btn.secondary {
+            background: #6b7280;
+        }
+
+        .btn.secondary:hover {
+            background: #4b5563;
+        }
+
+        .demo-content {
+            min-height: 100px;
+            border: 1px dashed #d1d5db;
+            border-radius: 4px;
+            padding: 16px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .form-demo {
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .progress-demo {
+            margin: 16px 0;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.idle {
+            background: #9ca3af;
+        }
+
+        .status-indicator.loading {
+            background: #f59e0b;
+            animation: pulse 1s infinite;
+        }
+
+        .status-indicator.success {
+            background: #10b981;
+        }
+
+        .status-indicator.error {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Loading States Demo</h1>
+            <p>Comprehensive loading indicators, skeleton screens, and progress bars for the Go/Vanilla port</p>
+        </div>
+
+        <!-- Global Loading Demo -->
+        <div class="demo-section">
+            <h3>Global Loading Overlay</h3>
+            <p>Full-screen loading overlay for major operations</p>
+            <button class="btn" onclick="demoGlobalLoading()">Show Global Loading</button>
+            <button class="btn secondary" onclick="demoGlobalLoadingCustom()">Custom Loading Text</button>
+        </div>
+
+        <!-- Component Loading Demo -->
+        <div class="demo-section">
+            <h3>Component Loading States</h3>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h4>Component Loading</h4>
+                    <div class="demo-content" id="component-demo">
+                        <p>This content will show loading state</p>
+                    </div>
+                    <button class="btn" onclick="demoComponentLoading()">Toggle Loading</button>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Button Loading</h4>
+                    <button class="btn" id="demo-button" onclick="demoButtonLoading(this)">
+                        Click to Load
+                    </button>
+                    <p><small>Button will show loading spinner</small></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Loading Demo -->
+        <div class="demo-section">
+            <h3>Form Loading States</h3>
+            <div class="form-demo">
+                <form id="demo-form" onsubmit="demoFormLoading(event)">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Submit Form</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Progress Bars Demo -->
+        <div class="demo-section">
+            <h3>Progress Indicators</h3>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h4>Determinate Progress</h4>
+                    <div class="progress-demo" id="progress-demo-1"></div>
+                    <button class="btn" onclick="demoProgressBar()">Start Progress</button>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Indeterminate Progress</h4>
+                    <div class="progress-demo" id="progress-demo-2"></div>
+                    <button class="btn" onclick="demoIndeterminateProgress()">Show Indeterminate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skeleton Screens Demo -->
+        <div class="demo-section">
+            <h3>Skeleton Screens</h3>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h4>Card Skeleton</h4>
+                    <div class="demo-content" id="skeleton-demo-1">
+                        <div>
+                            <h4>Article Title</h4>
+                            <p>This is some article content that will be replaced with skeleton loading.</p>
+                            <button class="btn">Read More</button>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="demoSkeleton('skeleton-demo-1', 'card')">Show Card Skeleton</button>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Profile Skeleton</h4>
+                    <div class="demo-content" id="skeleton-demo-2">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 48px; height: 48px; background: #e5e7eb; border-radius: 50%;"></div>
+                            <div>
+                                <h4 style="margin: 0;">John Doe</h4>
+                                <p style="margin: 0; color: #6b7280;">Software Developer</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="demoSkeleton('skeleton-demo-2', 'profile')">Show Profile Skeleton</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline Loaders Demo -->
+        <div class="demo-section">
+            <h3>Inline Loading Indicators</h3>
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h4>Spinner Loader</h4>
+                    <div class="demo-content" id="inline-demo-1">
+                        Content will be replaced with spinner
+                    </div>
+                    <button class="btn" onclick="demoInlineLoader('inline-demo-1', 'spinner')">Show Spinner</button>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Dots Loader</h4>
+                    <div class="demo-content" id="inline-demo-2">
+                        Content will be replaced with dots
+                    </div>
+                    <button class="btn" onclick="demoInlineLoader('inline-demo-2', 'dots')">Show Dots</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="demo-section">
+            <h3>Loading Status</h3>
+            <p>
+                <span class="status-indicator" id="status-indicator"></span>
+                <span id="status-text">Ready</span>
+            </p>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="demo-section">
+            <h3>Usage Examples</h3>
+            <h4>Basic Usage</h4>
+            <div class="code-block">
+// Show global loading
+loadingManager.showGlobalLoading('Processing...');
+
+// Component loading
+loadingManager.setComponentLoading(element, true);
+
+// Button loading
+loadingManager.setButtonLoading(button, true);
+
+// Progress bar
+const { element, id } = loadingManager.createProgressBar();
+loadingManager.updateProgressBar(id, 75);
+
+// Skeleton screen
+const skeletonId = loadingManager.showSkeleton(container, [
+    { type: 'title' },
+    { type: 'text', lines: 3 }
+]);
+            </div>
+
+            <h4>Async Operation Wrapper</h4>
+            <div class="code-block">
+// Wrap async operations with loading states
+await loadingManager.wrapAsyncOperation(
+    async () => {
+        const response = await fetch('/api/data');
+        return response.json();
+    },
+    {
+        globalLoading: true,
+        loadingText: 'Fetching data...',
+        component: myComponent.element,
+        button: submitButton
+    }
+);
+            </div>
+        </div>
+    </div>
+
+    <!-- Import the LoadingManager -->
+    <script type="module">
+        import loadingManager from './js/utils/LoadingManager.js';
+        
+        // Make it globally available for demo functions
+        window.loadingManager = loadingManager;
+        
+        // Demo state
+        let activeSkeletons = new Map();
+        let activeProgressBars = new Map();
+        
+        // Global Loading Demos
+        window.demoGlobalLoading = () => {
+            updateStatus('loading', 'Showing global loading...');
+            loadingManager.showGlobalLoading();
+            setTimeout(() => {
+                loadingManager.hideGlobalLoading();
+                updateStatus('success', 'Global loading hidden');
+                setTimeout(() => updateStatus('idle', 'Ready'), 2000);
+            }, 3000);
+        };
+        
+        window.demoGlobalLoadingCustom = () => {
+            updateStatus('loading', 'Custom loading text...');
+            loadingManager.showGlobalLoading('Processing your request...');
+            setTimeout(() => {
+                loadingManager.hideGlobalLoading();
+                updateStatus('success', 'Custom loading complete');
+                setTimeout(() => updateStatus('idle', 'Ready'), 2000);
+            }, 2500);
+        };
+        
+        // Component Loading Demo
+        window.demoComponentLoading = () => {
+            const element = document.getElementById('component-demo');
+            const isLoading = loadingManager.isComponentLoading(element);
+            
+            if (isLoading) {
+                loadingManager.setComponentLoading(element, false);
+                updateStatus('success', 'Component loading stopped');
+            } else {
+                loadingManager.setComponentLoading(element, true);
+                updateStatus('loading', 'Component loading started');
+                setTimeout(() => {
+                    loadingManager.setComponentLoading(element, false);
+                    updateStatus('success', 'Component loading auto-stopped');
+                    setTimeout(() => updateStatus('idle', 'Ready'), 2000);
+                }, 4000);
+            }
+        };
+        
+        // Button Loading Demo
+        window.demoButtonLoading = (button) => {
+            updateStatus('loading', 'Button loading...');
+            loadingManager.setButtonLoading(button, true);
+            
+            setTimeout(() => {
+                loadingManager.setButtonLoading(button, false);
+                updateStatus('success', 'Button loading complete');
+                setTimeout(() => updateStatus('idle', 'Ready'), 2000);
+            }, 3000);
+        };
+        
+        // Form Loading Demo
+        window.demoFormLoading = (event) => {
+            event.preventDefault();
+            const form = event.target;
+            
+            updateStatus('loading', 'Form submitting...');
+            loadingManager.setFormLoading(form, true);
+            
+            setTimeout(() => {
+                loadingManager.setFormLoading(form, false);
+                updateStatus('success', 'Form submitted successfully');
+                setTimeout(() => updateStatus('idle', 'Ready'), 2000);
+            }, 2500);
+        };
+        
+        // Progress Bar Demo
+        window.demoProgressBar = () => {
+            const container = document.getElementById('progress-demo-1');
+            
+            // Clear existing progress bar
+            if (activeProgressBars.has('demo-1')) {
+                const { id } = activeProgressBars.get('demo-1');
+                loadingManager.removeProgressBar(id);
+            }
+            
+            const { element, id } = loadingManager.createProgressBar({
+                animated: true,
+                initialValue: 0
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(element);
+            activeProgressBars.set('demo-1', { element, id });
+            
+            updateStatus('loading', 'Progress bar running...');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                loadingManager.updateProgressBar(id, progress);
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    updateStatus('success', 'Progress complete');
+                    setTimeout(() => {
+                        container.innerHTML = '<p style="color: #10b981;">✓ Complete</p>';
+                        updateStatus('idle', 'Ready');
+                    }, 1000);
+                }
+            }, 100);
+        };
+        
+        // Indeterminate Progress Demo
+        window.demoIndeterminateProgress = () => {
+            const container = document.getElementById('progress-demo-2');
+            
+            if (activeProgressBars.has('demo-2')) {
+                const { id } = activeProgressBars.get('demo-2');
+                loadingManager.removeProgressBar(id);
+                container.innerHTML = '';
+                activeProgressBars.delete('demo-2');
+                updateStatus('idle', 'Ready');
+                return;
+            }
+            
+            const { element, id } = loadingManager.createProgressBar({
+                indeterminate: true
+            });
+            
+            container.appendChild(element);
+            activeProgressBars.set('demo-2', { element, id });
+            
+            updateStatus('loading', 'Indeterminate progress...');
+        };
+        
+        // Skeleton Demo
+        window.demoSkeleton = (containerId, type) => {
+            const container = document.getElementById(containerId);
+            
+            if (activeSkeletons.has(containerId)) {
+                const skeletonId = activeSkeletons.get(containerId);
+                loadingManager.hideSkeleton(skeletonId);
+                activeSkeletons.delete(containerId);
+                updateStatus('success', 'Skeleton hidden');
+                setTimeout(() => updateStatus('idle', 'Ready'), 1000);
+                return;
+            }
+            
+            const layouts = loadingManager.getSkeletonLayouts();
+            const layout = layouts[type] || layouts.card;
+            
+            const skeletonId = loadingManager.showSkeleton(container, layout);
+            activeSkeletons.set(containerId, skeletonId);
+            
+            updateStatus('loading', `${type} skeleton shown`);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                if (activeSkeletons.has(containerId)) {
+                    loadingManager.hideSkeleton(skeletonId);
+                    activeSkeletons.delete(containerId);
+                    updateStatus('success', 'Skeleton auto-hidden');
+                    setTimeout(() => updateStatus('idle', 'Ready'), 1000);
+                }
+            }, 5000);
+        };
+        
+        // Inline Loader Demo
+        window.demoInlineLoader = (containerId, type) => {
+            const container = document.getElementById(containerId);
+            const originalContent = container.innerHTML;
+            
+            if (type === 'spinner') {
+                const loader = loadingManager.createInlineLoader('medium');
+                container.innerHTML = '';
+                container.appendChild(loader);
+            } else {
+                const loader = loadingManager.createDotsLoader('Loading');
+                container.innerHTML = '';
+                container.appendChild(loader);
+            }
+            
+            updateStatus('loading', `${type} loader shown`);
+            
+            setTimeout(() => {
+                container.innerHTML = originalContent;
+                updateStatus('success', 'Inline loader hidden');
+                setTimeout(() => updateStatus('idle', 'Ready'), 1000);
+            }, 3000);
+        };
+        
+        // Status Update Helper
+        function updateStatus(status, text) {
+            const indicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            indicator.className = `status-indicator ${status}`;
+            statusText.textContent = text;
+        }
+        
+        // Initialize
+        updateStatus('idle', 'Ready');
+        console.log('Loading Demo initialized. LoadingManager available as window.loadingManager');
+    </script>
+</body>
+</html>

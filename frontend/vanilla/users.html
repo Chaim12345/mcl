@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Kirom</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        .users-container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .users-main {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+        .users-sidebar {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            height: fit-content;
+        }
+        .users-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .user-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        .user-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        }
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .user-info h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        .user-email {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .user-role {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            border: 1px solid #dee2e6;
+        }
+        .user-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9em;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .search-users {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filter-section {
+            margin-bottom: 20px;
+        }
+        .filter-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1em;
+        }
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">Kirom</h1>
+                <nav class="nav-menu">
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                    <a href="/boards" class="nav-link">Boards</a>
+                    <a href="/workspaces" class="nav-link">Workspaces</a>
+                    <a href="/users" class="nav-link active">Users</a>
+                    <a href="/search" class="nav-link">Search</a>
+                    <a href="/calendar" class="nav-link">Calendar</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <img src="/assets/images/avatar1.jpg" alt="User" class="avatar">
+                    <span class="user-name">John Doe</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="users-container">
+                <div class="users-header">
+                    <h2>User Management</h2>
+                    <button class="btn btn-success" id="invite-user-btn">
+                        + Invite User
+                    </button>
+                </div>
+
+                <!-- User Statistics -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-users">0</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="active-users">0</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pending-invites">0</div>
+                        <div class="stat-label">Pending Invites</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="admin-users">0</div>
+                        <div class="stat-label">Administrators</div>
+                    </div>
+                </div>
+
+                <div class="users-main">
+                    <aside class="users-sidebar">
+                        <input type="text" id="search-users" class="search-users" 
+                               placeholder="Search users...">
+                        
+                        <div class="filter-section">
+                            <h3>Filter by Role</h3>
+                            <div class="filter-option">
+                                <input type="checkbox" id="filter-admin" checked>
+                                <label for="filter-admin">Administrators</label>
+                            </div>
+                            <div class="filter-option">
+                                <input type="checkbox" id="filter-member" checked>
+                                <label for="filter-member">Members</label>
+                            </div>
+                            <div class="filter-option">
+                                <input type="checkbox" id="filter-viewer" checked>
+                                <label for="filter-viewer">Viewers</label>
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <h3>Filter by Status</h3>
+                            <div class="filter-option">
+                                <input type="checkbox" id="filter-active" checked>
+                                <label for="filter-active">Active</label>
+                            </div>
+                            <div class="filter-option">
+                                <input type="checkbox" id="filter-pending">
+                                <label for="filter-pending">Pending</label>
+                            </div>
+                            <div class="filter-option">
+                                <input type="checkbox" id="filter-inactive">
+                                <label for="filter-inactive">Inactive</label>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <div class="users-content">
+                        <div id="users-list">
+                            <!-- Users will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- User Invite Dialog -->
+    <div id="user-invite-dialog-container"></div>
+
+    <!-- Load Components -->
+    <script type="module">
+        import { UserList } from '/js/components/user/UserList.js';
+        import { UserInvite } from '/js/components/user/UserInvite.js';
+        import { AdminDashboard } from '/js/components/user/AdminDashboard.js';
+        import { UserManagementService } from '/js/services/userManagement.js';
+
+        class UsersPage {
+            constructor() {
+                this.userService = new UserManagementService();
+                this.userList = null;
+                this.userInvite = null;
+                this.adminDashboard = null;
+                this.currentFilters = {
+                    roles: ['admin', 'member', 'viewer'],
+                    statuses: ['active']
+                };
+                this.searchQuery = '';
+                this.init();
+            }
+
+            init() {
+                this.setupComponents();
+                this.setupEventListeners();
+                this.loadUsers();
+                this.loadUserStats();
+            }
+
+            setupComponents() {
+                // Initialize user list component
+                const listContainer = document.getElementById('users-list');
+                this.userList = new UserList(listContainer, {
+                    onUserClick: this.handleUserClick.bind(this),
+                    onEditUser: this.handleEditUser.bind(this),
+                    onDeleteUser: this.handleDeleteUser.bind(this),
+                    onChangeRole: this.handleChangeRole.bind(this)
+                });
+
+                // Initialize user invite component
+                const inviteContainer = document.getElementById('user-invite-dialog-container');
+                this.userInvite = new UserInvite(inviteContainer, {
+                    onUserInvited: this.handleUserInvited.bind(this)
+                });
+
+                // Initialize admin dashboard for stats
+                this.adminDashboard = new AdminDashboard();
+            }
+
+            setupEventListeners() {
+                // Invite user button
+                document.getElementById('invite-user-btn').addEventListener('click', () => {
+                    this.userInvite.show();
+                });
+
+                // Search input
+                const searchInput = document.getElementById('search-users');
+                let searchTimeout;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.searchQuery = e.target.value;
+                        this.filterAndDisplayUsers();
+                    }, 300);
+                });
+
+                // Filter checkboxes
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        this.updateFilters();
+                        this.filterAndDisplayUsers();
+                    });
+                });
+            }
+
+            updateFilters() {
+                // Update role filters
+                this.currentFilters.roles = [];
+                if (document.getElementById('filter-admin').checked) {
+                    this.currentFilters.roles.push('admin');
+                }
+                if (document.getElementById('filter-member').checked) {
+                    this.currentFilters.roles.push('member');
+                }
+                if (document.getElementById('filter-viewer').checked) {
+                    this.currentFilters.roles.push('viewer');
+                }
+
+                // Update status filters
+                this.currentFilters.statuses = [];
+                if (document.getElementById('filter-active').checked) {
+                    this.currentFilters.statuses.push('active');
+                }
+                if (document.getElementById('filter-pending').checked) {
+                    this.currentFilters.statuses.push('pending');
+                }
+                if (document.getElementById('filter-inactive').checked) {
+                    this.currentFilters.statuses.push('inactive');
+                }
+            }
+
+            async loadUsers() {
+                try {
+                    this.allUsers = await this.userService.getAllUsers();
+                    this.filterAndDisplayUsers();
+                } catch (error) {
+                    console.error('Failed to load users:', error);
+                    this.showError('Failed to load users. Please try again.');
+                }
+            }
+
+            async loadUserStats() {
+                try {
+                    const stats = await this.adminDashboard.getUserStats();
+                    document.getElementById('total-users').textContent = stats.totalUsers || 0;
+                    document.getElementById('active-users').textContent = stats.activeUsers || 0;
+                    document.getElementById('pending-invites').textContent = stats.pendingInvites || 0;
+                    document.getElementById('admin-users').textContent = stats.adminUsers || 0;
+                } catch (error) {
+                    console.error('Failed to load user stats:', error);
+                }
+            }
+
+            filterAndDisplayUsers() {
+                if (!this.allUsers) return;
+
+                let filteredUsers = this.allUsers.filter(user => {
+                    // Filter by role
+                    if (!this.currentFilters.roles.includes(user.role)) {
+                        return false;
+                    }
+
+                    // Filter by status
+                    if (!this.currentFilters.statuses.includes(user.status)) {
+                        return false;
+                    }
+
+                    // Filter by search query
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        return (
+                            user.name.toLowerCase().includes(query) ||
+                            user.email.toLowerCase().includes(query)
+                        );
+                    }
+
+                    return true;
+                });
+
+                this.userList.render(filteredUsers);
+            }
+
+            handleUserClick(user) {
+                // Show user profile or details
+                window.location.href = `/users/${user.id}`;
+            }
+
+            async handleEditUser(user) {
+                // Open edit user dialog or navigate to edit page
+                console.log('Edit user:', user);
+            }
+
+            async handleDeleteUser(user) {
+                if (confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`)) {
+                    try {
+                        await this.userService.deleteUser(user.id);
+                        this.loadUsers(); // Reload the list
+                        this.loadUserStats(); // Update stats
+                        this.showSuccess('User deleted successfully.');
+                    } catch (error) {
+                        console.error('Failed to delete user:', error);
+                        this.showError('Failed to delete user. Please try again.');
+                    }
+                }
+            }
+
+            async handleChangeRole(user, newRole) {
+                try {
+                    await this.userService.updateUserRole(user.id, newRole);
+                    this.loadUsers(); // Reload the list
+                    this.loadUserStats(); // Update stats
+                    this.showSuccess(`User role updated to ${newRole}.`);
+                } catch (error) {
+                    console.error('Failed to update user role:', error);
+                    this.showError('Failed to update user role. Please try again.');
+                }
+            }
+
+            handleUserInvited(inviteData) {
+                this.loadUsers(); // Reload to show new pending user
+                this.loadUserStats(); // Update stats
+                this.showSuccess(`Invitation sent to ${inviteData.email}.`);
+            }
+
+            showSuccess(message) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #28a745;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+
+            showError(message) {
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #dc3545;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 5000);
+            }
+        }
+
+        // Initialize users page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new UsersPage();
+        });
+    </script>
+</body>
+</html>

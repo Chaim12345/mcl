@@ -5,15 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { VibeButton, VibeModal, VibeTextField } from '@/components/vibe';
 import {
   Form,
   FormControl,
@@ -23,9 +15,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { useVibeToast } from '@/hooks/use-vibe-toast';
 import { workspaceService } from '@/services/workspace-service';
 import { useWorkspaceStore } from '@/stores/workspace-store';
 
@@ -44,7 +35,7 @@ interface CreateWorkspaceDialogProps {
 }
 
 export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDialogProps) {
-  const { toast } = useToast();
+  const { toast } = useVibeToast();
   const queryClient = useQueryClient();
   const { addWorkspace, setCurrentWorkspace } = useWorkspaceStore();
   
@@ -62,19 +53,18 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
       addWorkspace(workspace);
       setCurrentWorkspace(workspace);
       queryClient.invalidateQueries({ queryKey: ['workspaces'] });
-      toast({
-        title: 'Workspace created',
-        description: `${workspace.name} has been created successfully.`,
-      });
+      toast.success(
+        'Workspace created',
+        `${workspace.name} has been created successfully.`
+      );
       form.reset();
       onOpenChange(false);
     },
     onError: (error) => {
-      toast({
-        title: 'Failed to create workspace',
-        description: 'There was an error creating your workspace. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error(
+        'Failed to create workspace',
+        'There was an error creating your workspace. Please try again.'
+      );
     },
   });
   
@@ -83,14 +73,19 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
   }
   
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
-        <DialogHeader>
-          <DialogTitle>Create Workspace</DialogTitle>
-          <DialogDescription>
+    <VibeModal 
+      open={open} 
+      onClose={() => onOpenChange(false)}
+      size="medium"
+      className="sm:max-w-[525px]"
+    >
+      <div className="p-6">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Create Workspace</h2>
+          <p className="text-sm text-gray-600">
             Create a new workspace for your team to collaborate on projects.
-          </DialogDescription>
-        </DialogHeader>
+          </p>
+        </div>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -101,7 +96,16 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="My Workspace" {...field} />
+                    <VibeTextField 
+                      {...field}
+                      title="Workspace Name"
+                      placeholder="My Workspace"
+                      size="medium"
+                      validation={form.formState.errors.name ? {
+                        status: 'error',
+                        text: form.formState.errors.name.message
+                      } : undefined}
+                    />
                   </FormControl>
                   <FormDescription>
                     This is the name of your workspace.
@@ -132,27 +136,26 @@ export function CreateWorkspaceDialog({ open, onOpenChange }: CreateWorkspaceDia
               )}
             />
             
-            <DialogFooter>
-              <Button
+            <div className="flex justify-end space-x-3 pt-4">
+              <VibeButton
                 type="button"
-                variant="outline"
+                kind="secondary"
                 onClick={() => onOpenChange(false)}
               >
                 Cancel
-              </Button>
-              <Button 
+              </VibeButton>
+              <VibeButton 
                 type="submit"
+                kind="primary"
+                loading={createWorkspaceMutation.isPending}
                 disabled={createWorkspaceMutation.isPending}
               >
-                {createWorkspaceMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
                 Create Workspace
-              </Button>
-            </DialogFooter>
+              </VibeButton>
+            </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </VibeModal>
   );
 }

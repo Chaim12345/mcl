@@ -103,7 +103,7 @@ export interface BoardColumn {
   id: string;
   boardId: string;
   name: string;
-  type: 'text' | 'status' | 'people' | 'date' | 'tags' | 'number';
+  type: 'text' | 'multiline' | 'email' | 'url' | 'status' | 'priority' | 'people' | 'date' | 'tags' | 'number' | 'checkbox';
   settings: Record<string, any>;
   position: number;
 }

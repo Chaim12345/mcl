@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
-import { Button } from '@/components/ui/button';
+import { VibeButton, VibeTextField } from '@/components/vibe';
 import {
   Form,
   FormControl,
@@ -14,9 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { useVibeToast } from '@/hooks/use-vibe-toast';
 import { authService } from '@/services/auth-service';
 
 const resetPasswordSchema = z.object({
@@ -31,7 +30,7 @@ export function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast } = useVibeToast();
   
   const token = searchParams.get('token');
   
@@ -47,29 +46,30 @@ export function ResetPasswordForm() {
     mutationFn: ({ token, password }: { token: string; password: string }) => 
       authService.resetPassword(token, password),
     onSuccess: () => {
-      toast({
-        title: 'Password reset successful',
-        description: 'Your password has been reset. You can now login with your new password.',
-      });
+      toast.success(
+        'Password reset successful',
+        'Your password has been reset. You can now login with your new password.',
+        { autoHideDuration: 5000 }
+      );
       navigate('/login');
     },
     onError: (error: any) => {
-      toast({
-        title: 'Password reset failed',
-        description: error.message || 'Invalid or expired token. Please try again.',
-        variant: 'destructive',
-      });
+      toast.error(
+        'Password reset failed',
+        error.message || 'Invalid or expired token. Please try again.',
+        { autoHideDuration: 6000 }
+      );
       setIsLoading(false);
     },
   });
   
   function onSubmit(values: z.infer<typeof resetPasswordSchema>) {
     if (!token) {
-      toast({
-        title: 'Invalid reset link',
-        description: 'The password reset link is invalid or has expired.',
-        variant: 'destructive',
-      });
+      toast.error(
+        'Invalid reset link',
+        'The password reset link is invalid or has expired.',
+        { autoHideDuration: 6000 }
+      );
       return;
     }
     
@@ -87,12 +87,14 @@ export function ResetPasswordForm() {
           </CardDescription>
         </CardHeader>
         <CardFooter>
-          <Button 
-            className="w-full" 
+          <VibeButton 
+            kind="primary"
+            size="large"
+            className="w-full h-11" 
             onClick={() => navigate('/forgot-password')}
           >
             Request New Reset Link
-          </Button>
+          </VibeButton>
         </CardFooter>
       </Card>
     );
@@ -116,12 +118,19 @@ export function ResetPasswordForm() {
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input 
+                    <VibeTextField 
+                      {...field}
+                      title="New Password"
                       placeholder="••••••••" 
                       type="password" 
                       autoComplete="new-password"
-                      disabled={isLoading} 
-                      {...field} 
+                      disabled={isLoading}
+                      size="medium"
+                      validation={form.formState.errors.password ? {
+                        status: 'error',
+                        text: form.formState.errors.password.message
+                      } : undefined}
+                      className="h-11"
                     />
                   </FormControl>
                   <FormMessage />
@@ -135,25 +144,35 @@ export function ResetPasswordForm() {
                 <FormItem>
                   <FormLabel>Confirm New Password</FormLabel>
                   <FormControl>
-                    <Input 
+                    <VibeTextField 
+                      {...field}
+                      title="Confirm New Password"
                       placeholder="••••••••" 
                       type="password" 
                       autoComplete="new-password"
-                      disabled={isLoading} 
-                      {...field} 
+                      disabled={isLoading}
+                      size="medium"
+                      validation={form.formState.errors.confirmPassword ? {
+                        status: 'error',
+                        text: form.formState.errors.confirmPassword.message
+                      } : undefined}
+                      className="h-11"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button 
+            <VibeButton 
               type="submit" 
-              className="w-full" 
-              disabled={isLoading}
+              kind="primary"
+              size="large"
+              loading={isLoading}
+              disabled={isLoading || !form.formState.isValid}
+              className="w-full h-11"
             >
               {isLoading ? 'Resetting...' : 'Reset Password'}
-            </Button>
+            </VibeButton>
           </form>
         </Form>
       </CardContent>

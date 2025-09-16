@@ -35,6 +35,8 @@
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@tanstack/react-query": "^5.8.4",
+    "@vibe/core": "^3.57.0",
+    "@vibe/icons": "^1.9.0",
     "axios": "^1.6.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
@@ -50,13 +52,16 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
     "react-router-dom": "^6.20.1",
+    "serve": "^14.2.5",
     "socket.io-client": "^4.7.4",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.1.0",
     "zod": "^3.22.4",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.41.2",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
@@ -76,7 +81,6 @@
     "tailwindcss": "^3.3.6",
     "typescript": "^5.2.2",
     "vite": "^5.0.0",
-    "vitest": "^1.0.0",
-    "@playwright/test": "^1.41.2"
+    "vitest": "^1.0.0"
   }
 }

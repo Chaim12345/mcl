@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .connected { color: green; }
+        .disconnected { color: red; }
+        .error { color: red; }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        input[type="text"] {
+            padding: 8px;
+            margin: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Test Interface</h1>
+    
+    <div class="test-section">
+        <h2>Connection Configuration</h2>
+        <label>JWT Token: <input type="text" id="jwtToken" placeholder="Paste JWT token here" size="50"></label>
+        <br>
+        <label>Board ID: <input type="text" id="boardId" placeholder="Board ID" value="test-board"></label>
+        <br>
+        <button onclick="connectGeneral()">Connect General WS</button>
+        <button onclick="connectBoard()">Connect Board WS</button>
+        <button onclick="disconnect()">Disconnect</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Subscription Test</h2>
+        <button onclick="subscribeToBoard()">Subscribe to Board</button>
+        <button onclick="subscribeToItem()">Subscribe to Item</button>
+        <button onclick="unsubscribe()">Unsubscribe</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Status</h2>
+        <div id="status">Disconnected</div>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentRoom = null;
+
+        function addLog(message, className = '') {
+            const log = document.getElementById('log');
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            if (className) div.className = className;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStatus(status, className = '') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = className;
+        }
+
+        function connectGeneral() {
+            const token = document.getElementById('jwtToken').value;
+            if (!token) {
+                alert('Please provide a JWT token');
+                return;
+            }
+
+            const wsUrl = `ws://localhost:8080/ws?token=${token}`;
+            connect(wsUrl, 'general');
+        }
+
+        function connectBoard() {
+            const token = document.getElementById('jwtToken').value;
+            const boardId = document.getElementById('boardId').value;
+            if (!token || !boardId) {
+                alert('Please provide both JWT token and Board ID');
+                return;
+            }
+
+            const wsUrl = `ws://localhost:8080/ws/board/${boardId}?token=${token}`;
+            connect(wsUrl, `board:${boardId}`);
+        }
+
+        function connect(url, room) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                addLog('Already connected, disconnecting first...');
+                disconnect();
+            }
+
+            addLog(`Connecting to ${url}`);
+            ws = new WebSocket(url);
+
+            ws.onopen = function() {
+                updateStatus(`Connected to ${room}`, 'connected');
+                addLog(`Connected to ${room}`);
+                currentRoom = room;
+                
+                // Send ping to test connection
+                sendMessage({type: 'ping'});
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                addLog(`Received: ${JSON.stringify(data, null, 2)}`);
+            };
+
+            ws.onclose = function() {
+                updateStatus('Disconnected', 'disconnected');
+                addLog('Connection closed');
+                currentRoom = null;
+            };
+
+            ws.onerror = function(error) {
+                updateStatus('Error occurred', 'error');
+                addLog(`WebSocket error: ${error}`, 'error');
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+                updateStatus('Disconnected', 'disconnected');
+                addLog('Disconnected manually');
+            }
+        }
+
+        function sendMessage(message) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(message));
+                addLog(`Sent: ${JSON.stringify(message)}`);
+            } else {
+                addLog('Not connected');
+            }
+        }
+
+        function subscribeToBoard() {
+            const boardId = document.getElementById('boardId').value;
+            if (!boardId) {
+                alert('Please provide a Board ID');
+                return;
+            }
+            sendMessage({type: 'subscribe', room: `board:${boardId}`});
+        }
+
+        function subscribeToItem() {
+            const itemId = prompt('Enter Item ID:');
+            if (itemId) {
+                sendMessage({type: 'subscribe', room: `item:${itemId}`});
+            }
+        }
+
+        function unsubscribe() {
+            if (currentRoom) {
+                sendMessage({type: 'unsubscribe', room: currentRoom});
+            }
+        }
+
+        // Add some test data for development
+        if (window.location.hostname === 'localhost') {
+            // Auto-fill a test token for local development
+            document.getElementById('jwtToken').value = 'your-test-jwt-token-here';
+        }
+    </script>
+</body>
+</html>

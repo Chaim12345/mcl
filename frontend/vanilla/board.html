@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monday.com Clone - Board</title>
+    
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/board.css">
+    <script type="module" src="./css/design-system.js"></script>
+    <script type="module" src="./css/production-styles.js"></script>
+    <script type="module" src="./css/table-styles.js"></script>
+    <link rel="stylesheet" href="./css/components.css">
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">Kirom</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link" data-page="dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/boards" class="nav-link active" data-page="boards">Boards</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/calendar" class="nav-link" data-page="calendar">Calendar</a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <select id="board-switcher" class="board-selector">
+                    <option value="">Select a board</option>
+                    <option value="1">Project Alpha</option>
+                    <option value="2">Marketing Campaign</option>
+                    <option value="3">Product Development</option>
+                </select>
+                <button id="logout-button" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Error and Success Messages -->
+        <div id="error-message" class="alert alert-error" style="display: none;"></div>
+        <div id="success-message" class="alert alert-success" style="display: none;"></div>
+        
+        <!-- Board Container -->
+        <div id="board-container" data-board-id="1">
+            <!-- Board will be rendered here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2023 Kirom. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script type="module">
+        // Sample board data for demonstration
+        const sampleBoardData = {
+            id: '1',
+            name: 'Project Alpha',
+            columns: [
+                {
+                    id: 'col-1',
+                    name: 'To Do',
+                    tasks: [
+                        {
+                            id: 'task-1',
+                            title: 'Research competitors',
+                            description: 'Analyze competitor products and features',
+                            priority: 'high',
+                            assignee: {
+                                name: 'John Doe',
+                                avatar: './assets/images/avatar1.jpg'
+                            }
+                        },
+                        {
+                            id: 'task-2',
+                            title: 'Create wireframes',
+                            description: 'Design initial wireframes for the new feature',
+                            priority: 'medium',
+                            assignee: {
+                                name: 'Jane Smith',
+                                avatar: './assets/images/avatar2.jpg'
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'col-2',
+                    name: 'In Progress',
+                    tasks: [
+                        {
+                            id: 'task-3',
+                            title: 'Develop authentication system',
+                            description: 'Implement user login and registration',
+                            priority: 'high',
+                            assignee: {
+                                name: 'Mike Johnson',
+                                avatar: './assets/images/avatar3.jpg'
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'col-3',
+                    name: 'Review',
+                    tasks: [
+                        {
+                            id: 'task-4',
+                            title: 'Code review for API endpoints',
+                            description: 'Review and test all new API endpoints',
+                            priority: 'medium',
+                            assignee: {
+                                name: 'Sarah Williams',
+                                avatar: './assets/images/avatar4.jpg'
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: 'col-4',
+                    name: 'Done',
+                    tasks: [
+                        {
+                            id: 'task-5',
+                            title: 'Setup project repository',
+                            description: 'Create GitHub repository and configure CI/CD',
+                            priority: 'low',
+                            assignee: {
+                                name: 'David Brown',
+                                avatar: './assets/images/avatar5.jpg'
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Dynamically import and initialize the Monday.com-style Board component
+        import('./js/components/board/MondayStyleBoard.js').then(({ MondayStyleBoard }) => {
+            const boardContainer = document.getElementById('board-container');
+            const urlParams = new URLSearchParams(window.location.search);
+            const boardId = urlParams.get('id') || urlParams.get('boardId');
+            const view = urlParams.get('view') || 'table';
+            
+            // Initialize Monday.com-style board
+            const board = new MondayStyleBoard(boardContainer, {
+                boardId: boardId,
+                view: view,
+                editable: true,
+                showFilters: true
+            });
+            
+            // Make board globally accessible for debugging
+            window.board = board;
+        }).catch(error => {
+            console.error('Error loading MondayStyleBoard component:', error);
+            document.getElementById('board-container').innerHTML = 
+                '<div class="error-message">Failed to load board component. Please refresh the page.</div>';
+        });
+    </script>
+</body>
+</html>

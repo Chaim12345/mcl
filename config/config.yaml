@@ -1,0 +1,23 @@
+server:
+  host: "0.0.0.0"
+  port: "8080"
+  read_timeout: "30s"
+  write_timeout: "30s"
+
+database:
+  uri: "mongodb://root:password@localhost:27017/project_management_dev?authSource=admin"
+  name: "project_management_dev"
+
+jwt:
+  secret: "your_super_secret_key_change_me_in_production"
+  access_expiration: "15m"
+  refresh_expiration: "168h"
+
+email:
+  smtp_host: "mail.cock.li"
+  smtp_port: 465
+  smtp_user: "chaim12345@cock.li"
+  smtp_password: "Aa123456789!"
+  from_address: "chaim12345@cock.li"
+
+environment: "development"

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test</title>
+    <link rel="stylesheet" href="css/base/reset.css">
+    <link rel="stylesheet" href="css/base/variables.css">
+    <link rel="stylesheet" href="css/utilities/utilities.css">
+    <link rel="stylesheet" href="css/components/components.css">
+</head>
+<body>
+    <div id="app">
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-spinner"></div>
+            <p>Loading...</p>
+        </div>
+        
+        <div id="app-content" class="app-content hidden">
+            <div style="padding: 20px;">
+                <h1>Application Loaded!</h1>
+                <p>This is a test to see if the basic functionality works.</p>
+                <button id="test-btn" class="btn btn-primary">Test Button</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('Simple test script starting...');
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+        function init() {
+            console.log('Initializing simple test...');
+            
+            const loadingScreen = document.getElementById('loading-screen');
+            const appContent = document.getElementById('app-content');
+            
+            console.log('Loading screen:', loadingScreen);
+            console.log('App content:', appContent);
+            
+            // Simulate loading time
+            setTimeout(() => {
+                console.log('Hiding loading screen...');
+                
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+                
+                if (appContent) {
+                    appContent.classList.remove('hidden');
+                }
+                
+                console.log('App should be visible now');
+                
+                // Add button click handler
+                const testBtn = document.getElementById('test-btn');
+                if (testBtn) {
+                    testBtn.addEventListener('click', () => {
+                        alert('Button clicked! JavaScript is working.');
+                    });
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

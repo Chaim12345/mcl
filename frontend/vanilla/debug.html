@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+</head>
+<body>
+    <div id="loading-screen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+        <div>Loading...</div>
+    </div>
+    
+    <div id="app-content" class="hidden" style="padding: 20px;">
+        <h1>App Content</h1>
+        <p>This should appear when JavaScript runs.</p>
+    </div>
+    
+    <script>
+        console.log('Simple script test');
+        
+        setTimeout(() => {
+            console.log('Hiding loading screen...');
+            const loading = document.getElementById('loading-screen');
+            const content = document.getElementById('app-content');
+            
+            if (loading) {
+                loading.style.display = 'none';
+                console.log('Loading hidden');
+            }
+            
+            if (content) {
+                content.classList.remove('hidden');
+                content.style.display = 'block';
+                console.log('Content shown');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monday.com Clone - Dashboard</title>
+    
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/components.css">
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">Kirom</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link active" data-page="dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/boards" class="nav-link" data-page="boards">Boards</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/calendar" class="nav-link" data-page="calendar">Calendar</a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <select id="board-switcher" class="board-selector">
+                    <option value="">Select a board</option>
+                    <option value="1">Project Alpha</option>
+                    <option value="2">Marketing Campaign</option>
+                    <option value="3">Product Development</option>
+                </select>
+                <button id="logout-button" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Error and Success Messages -->
+        <div id="error-message" class="alert alert-error" style="display: none;"></div>
+        <div id="success-message" class="alert alert-success" style="display: none;"></div>
+        
+        <div class="container">
+            <h1>Dashboard</h1>
+            <p>Welcome to your Kirom dashboard. Here you can get an overview of your projects and tasks.</p>
+            
+            <div class="row mt-3">
+                <div class="col-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Quick Stats</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-item mb-2">
+                                <strong>Active Boards:</strong> 3
+                            </div>
+                            <div class="stat-item mb-2">
+                                <strong>Pending Tasks:</strong> 12
+                            </div>
+                            <div class="stat-item">
+                                <strong>Completed Tasks:</strong> 24
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Activity</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-item mb-2">
+                                <strong>John Doe</strong> updated task "Research competitors" in Project Alpha
+                                <span class="text-muted ml-2">2 hours ago</span>
+                            </div>
+                            <div class="activity-item mb-2">
+                                <strong>Jane Smith</strong> added new task "Create wireframes" to Marketing Campaign
+                                <span class="text-muted ml-2">5 hours ago</span>
+                            </div>
+                            <div class="activity-item mb-2">
+                                <strong>Mike Johnson</strong> completed task "Setup project repository" in Product Development
+                                <span class="text-muted ml-2">1 day ago</span>
+                            </div>
+                            <div class="activity-item">
+                                <strong>Sarah Williams</strong> commented on task "Code review for API endpoints"
+                                <span class="text-muted ml-2">2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Your Boards</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="board-grid">
+                                <div class="board-card">
+                                    <div class="board-card-content">
+                                        <h4 class="board-title">Project Alpha</h4>
+                                        <p class="board-description">Main product development project</p>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar" style="width: 65%"></div>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small>12 of 18 tasks completed</small>
+                                        </div>
+                                    </div>
+                                    <div class="board-card-actions">
+                                        <button class="btn btn-primary btn-sm">View Board</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="board-card">
+                                    <div class="board-card-content">
+                                        <h4 class="board-title">Marketing Campaign</h4>
+                                        <p class="board-description">Q3 marketing initiatives</p>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar" style="width: 30%"></div>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small>3 of 10 tasks completed</small>
+                                        </div>
+                                    </div>
+                                    <div class="board-card-actions">
+                                        <button class="btn btn-primary btn-sm">View Board</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="board-card">
+                                    <div class="board-card-content">
+                                        <h4 class="board-title">Product Roadmap</h4>
+                                        <p class="board-description">Long-term product planning</p>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar" style="width: 10%"></div>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small>1 of 10 tasks completed</small>
+                                        </div>
+                                    </div>
+                                    <div class="board-card-actions">
+                                        <button class="btn btn-primary btn-sm">View Board</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2023 Kirom. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script type="module">
+        // Initialize navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners for navigation
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    if (page) {
+                        window.location.href = `/${page}`;
+                    }
+                });
+            });
+            
+            // Add event listeners for board cards
+            const viewBoardButtons = document.querySelectorAll('.board-card-actions .btn');
+            viewBoardButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // In a real app, this would navigate to the specific board
+                    window.location.href = '/board?boardId=1';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

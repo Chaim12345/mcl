@@ -285,21 +285,30 @@ export function BoardTable({ board, onOpenItemDetail, filter, sorts }: BoardTabl
         ref={tableContainerRef}
         className="border rounded-md overflow-hidden"
         style={{ cursor: isResizing ? 'col-resize' : 'default' }}
+        role="region"
+        aria-label={`Board table for ${board.name}`}
       >
         {/* Bulk actions toolbar */}
         {selectedItems.size > 0 && (
-          <div className="bg-primary/10 p-2 flex items-center justify-between border-b">
+          <div
+            className="bg-primary/10 p-2 flex items-center justify-between border-b"
+            role="toolbar"
+            aria-label={`Bulk actions for ${selectedItems.size} selected items`}
+          >
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{selectedItems.size} items selected</span>
+              <span className="text-sm font-medium" id="selected-count">
+                {selectedItems.size} items selected
+              </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" role="group" aria-labelledby="selected-count">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleBulkDuplicate}
                 disabled={bulkDuplicateMutation.isPending}
+                aria-label={`Duplicate ${selectedItems.size} selected items`}
               >
-                <Copy className="h-4 w-4 mr-1" />
+                <Copy className="h-4 w-4 mr-1" aria-hidden="true" />
                 Duplicate
               </Button>
               <Button
@@ -307,8 +316,9 @@ export function BoardTable({ board, onOpenItemDetail, filter, sorts }: BoardTabl
                 variant="destructive"
                 onClick={handleBulkDelete}
                 disabled={bulkDeleteMutation.isPending}
+                aria-label={`Delete ${selectedItems.size} selected items`}
               >
-                <Trash2 className="h-4 w-4 mr-1" />
+                <Trash2 className="h-4 w-4 mr-1" aria-hidden="true" />
                 Delete
               </Button>
             </div>
@@ -318,14 +328,16 @@ export function BoardTable({ board, onOpenItemDetail, filter, sorts }: BoardTabl
         <ScrollArea className="h-[calc(100vh-220px)]">
           <div className="relative">
             {/* Table Header */}
-            <div className="flex border-b bg-muted/50 sticky top-0 z-10">
+            <div className="flex border-b bg-muted/50 sticky top-0 z-10" role="rowgroup">
               {/* Selection checkbox header */}
-              <div className="p-2 flex items-center justify-center border-r w-10">
+              <div className="p-2 flex items-center justify-center border-r w-10" role="columnheader">
                 <Checkbox
                   checked={allSelected ? true : someSelected ? "indeterminate" : false}
                   onCheckedChange={handleSelectAll}
                   aria-label="Select all items"
+                  aria-describedby="select-all-description"
                 />
+                <span id="select-all-description" className="sr-only">Select all items in this board</span>
               </div>
 
               <BoardTableHeader
@@ -336,24 +348,32 @@ export function BoardTable({ board, onOpenItemDetail, filter, sorts }: BoardTabl
             </div>
 
             {/* Table Body */}
-            <div className="relative">
+            <div className="relative" role="rowgroup">
               {items && items.length > 0 ? (
-                items.map((item, index) => (
-                  <BoardTableRow
-                    key={item.id}
-                    item={item}
-                    columns={columns}
-                    columnWidths={columnWidths}
-                    isSelected={selectedItems.has(item.id)}
-                    onSelect={handleSelectItem}
-                    onOpenItemDetail={onOpenItemDetail}
-                    index={index}
-                    moveItem={() => {}} // Placeholder for drag functionality
-                    onDragEnd={() => {}} // Placeholder for drag functionality
-                  />
-                ))
+                <>
+                  <div role="table" aria-label={`Items in ${board.name}`}>
+                    {items.map((item, index) => (
+                      <BoardTableRow
+                        key={item.id}
+                        item={item}
+                        columns={columns}
+                        columnWidths={columnWidths}
+                        isSelected={selectedItems.has(item.id)}
+                        onSelect={handleSelectItem}
+                        onOpenItemDetail={onOpenItemDetail}
+                        index={index}
+                        moveItem={() => {}} // Placeholder for drag functionality
+                        onDragEnd={() => {}} // Placeholder for drag functionality
+                      />
+                    ))}
+                  </div>
+                </>
               ) : (
-                <div className="flex items-center justify-center h-32 text-muted-foreground">
+                <div
+                  className="flex items-center justify-center h-32 text-muted-foreground"
+                  role="status"
+                  aria-live="polite"
+                >
                   No items in this board yet.
                 </div>
               )}
@@ -373,6 +393,7 @@ export function BoardTable({ board, onOpenItemDetail, filter, sorts }: BoardTabl
               width: `${Math.max(tableWidth, getTotalTableWidth() + 10)}px`, // Add 10px for selection column
               height: '1px'
             }}
+            aria-hidden="true"
           />
         </ScrollArea>
       </div>

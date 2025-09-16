@@ -1,0 +1,809 @@
+/**
+ * Member Management Components Styles
+ */
+
+/* Member List */
+.member-list {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.member-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 1rem;
+}
+
+.member-list-title {
+    flex: 1;
+}
+
+.member-list-title .heading-lg {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.25;
+}
+
+.member-list-actions {
+    flex-shrink: 0;
+}
+
+.member-list-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.bulk-count {
+    font-size: 0.875rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.btn--danger {
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.btn--danger:hover:not(:disabled) {
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
+/* Member Table */
+.member-table-container {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.member-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.member-table-cell {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.member-table thead .member-table-cell {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 0.75rem 1rem;
+}
+
+.member-table-cell--checkbox {
+    width: 48px;
+    padding-left: 1rem;
+    padding-right: 0.5rem;
+}
+
+.member-table-cell--member {
+    min-width: 250px;
+}
+
+.member-table-cell--role {
+    width: 140px;
+}
+
+.member-table-cell--status {
+    width: 100px;
+}
+
+.member-table-cell--joined {
+    width: 120px;
+}
+
+.member-table-cell--actions {
+    width: 100px;
+}
+
+.member-table-row {
+    transition: background-color 0.15s ease-in-out;
+}
+
+.member-table-row:hover {
+    background: #f9fafb;
+}
+
+.member-table-row--current {
+    background: #fef3c7;
+}
+
+.member-table-row--current:hover {
+    background: #fde68a;
+}
+
+/* Member Info */
+.member-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.member-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.member-avatar-placeholder {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.member-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.member-name {
+    font-weight: 500;
+    color: #1f2937;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.125rem;
+}
+
+.member-email {
+    font-size: 0.75rem;
+    color: #6b7280;
+    word-break: break-word;
+}
+
+.member-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.member-badge--you {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Role Management */
+.role-select {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #374151;
+    background: white;
+    min-width: 100px;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.role-badge--owner {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.role-badge--admin {
+    background: #ddd6fe;
+    color: #5b21b6;
+}
+
+.role-badge--editor {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.role-badge--viewer {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.role-icon {
+    width: 12px;
+    height: 12px;
+}
+
+/* Status Management */
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    text-transform: capitalize;
+}
+
+.status-badge--active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge--pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge--suspended {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Member Actions */
+.member-actions {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+/* Form Enhancements */
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #374151;
+    background: white;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Role Information */
+.role-info {
+    margin-top: 1rem;
+    position: relative;
+}
+
+.role-description {
+    display: none;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    animation: slideDown 0.2s ease-out;
+}
+
+.role-description--active {
+    display: block;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.role-description-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.role-description-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+}
+
+.role-permissions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.role-permissions-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.permission-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.permission-tag {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    padding: 0.125rem 0.375rem;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 4px;
+    text-transform: capitalize;
+}
+
+/* Email Management */
+.email-input-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.email-input-container .form-input {
+    flex: 1;
+}
+
+.added-emails {
+    margin-top: 1.5rem;
+}
+
+.added-emails-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 1rem 0;
+}
+
+.email-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.email-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.15s ease-in-out;
+}
+
+.email-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.email-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.email-avatar {
+    width: 32px;
+    height: 32px;
+    background: #6366f1;
+    color: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.email-details {
+    flex: 1;
+}
+
+.email-address {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1f2937;
+    margin-bottom: 0.125rem;
+}
+
+.email-status {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* Quick Actions */
+.quick-actions {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+}
+
+.quick-actions-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.75rem 0;
+}
+
+.quick-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Invitation Preview */
+.invitation-preview {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.invitation-preview-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.75rem 0;
+}
+
+.invitation-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+.summary-label {
+    color: #6b7280;
+}
+
+.summary-value {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+/* Confirmation Dialog */
+.confirmation-dialog .dialog-content {
+    max-width: 500px;
+}
+
+.confirmation-dialog .dialog-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.warning-icon {
+    margin-bottom: 1rem;
+    color: #f59e0b;
+}
+
+.confirmation-content {
+    max-width: 400px;
+}
+
+.confirmation-message {
+    font-size: 1rem;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+}
+
+.confirmation-details {
+    text-align: left;
+}
+
+.confirmation-list {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.confirmation-list li {
+    margin: 0.25rem 0;
+}
+
+.text-warning {
+    color: #f59e0b;
+    font-size: 0.875rem;
+    margin: 0.75rem 0 0 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .member-table-container {
+        overflow-x: auto;
+    }
+    
+    .member-table {
+        min-width: 700px;
+    }
+}
+
+@media (max-width: 768px) {
+    .member-list {
+        padding: 1rem;
+    }
+    
+    .member-list-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .member-list-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .bulk-actions {
+        justify-content: space-between;
+    }
+    
+    .member-table-cell {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .member-info {
+        gap: 0.5rem;
+    }
+    
+    .member-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .member-name {
+        font-size: 0.8125rem;
+    }
+    
+    .member-email {
+        font-size: 0.6875rem;
+    }
+    
+    .email-input-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .quick-action-buttons {
+        flex-direction: column;
+    }
+    
+    .quick-action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .role-permissions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .member-table-cell--checkbox,
+    .member-table-cell--actions {
+        display: none;
+    }
+    
+    .member-table-cell--status,
+    .member-table-cell--joined {
+        font-size: 0.75rem;
+    }
+    
+    .member-info {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .member-avatar {
+        align-self: center;
+    }
+    
+    .dialog-content {
+        margin: 0.5rem;
+        max-width: calc(100vw - 1rem);
+    }
+    
+    .dialog-actions {
+        flex-direction: column-reverse;
+        gap: 0.5rem;
+    }
+    
+    .dialog-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .member-list-title .heading-lg {
+        color: #f9fafb;
+    }
+    
+    .member-table-container {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .member-table thead .member-table-cell {
+        background: #111827;
+        color: #d1d5db;
+    }
+    
+    .member-table-cell {
+        border-color: #374151;
+        color: #f9fafb;
+    }
+    
+    .member-table-row:hover {
+        background: #374151;
+    }
+    
+    .member-table-row--current {
+        background: #451a03;
+    }
+    
+    .member-table-row--current:hover {
+        background: #78350f;
+    }
+    
+    .member-name {
+        color: #f9fafb;
+    }
+    
+    .role-select,
+    .form-select,
+    .form-input {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f9fafb;
+    }
+    
+    .email-item {
+        background: #374151;
+        border-color: #4b5563;
+    }
+    
+    .email-item:hover {
+        background: #4b5563;
+        border-color: #6b7280;
+    }
+    
+    .email-address {
+        color: #f9fafb;
+    }
+    
+    .quick-actions,
+    .invitation-preview,
+    .role-description {
+        background: #374151;
+        border-color: #4b5563;
+    }
+    
+    .bulk-actions {
+        background: #374151;
+        border-color: #4b5563;
+    }
+    
+    .confirmation-message {
+        color: #f9fafb;
+    }
+    
+    .dialog-content {
+        background: #1f2937;
+        color: #f9fafb;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .member-table-container,
+    .email-item,
+    .quick-actions,
+    .invitation-preview,
+    .role-description {
+        border-width: 2px;
+    }
+    
+    .role-badge,
+    .status-badge,
+    .permission-tag {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .member-table-row,
+    .email-item,
+    .role-select,
+    .form-select,
+    .role-description {
+        transition: none;
+    }
+    
+    .role-description {
+        animation: none;
+    }
+} 

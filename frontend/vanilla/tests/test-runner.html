@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Client Tests</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header {
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .test-header h1 {
+            margin: 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        
+        .test-output {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        
+        .test-results.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-results.failure {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-results.running {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .test-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .passed { color: #28a745; }
+        .failed { color: #dc3545; }
+        .total { color: #007bff; }
+        .rate { color: #17a2b8; }
+        
+        .error-details {
+            background-color: #2d2d2d;
+            border-left: 4px solid #dc3545;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .success-details {
+            background-color: #2d2d2d;
+            border-left: 4px solid #28a745;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>
+                🧪 API Client Test Suite
+                <span id="test-status"></span>
+            </h1>
+            <p>Comprehensive tests for the vanilla JavaScript API client</p>
+        </div>
+        
+        <div class="test-controls">
+            <button id="run-tests" class="btn btn-primary">
+                <span id="run-text">Run Tests</span>
+                <span id="loading" class="loading" style="display: none;"></span>
+            </button>
+            <button id="clear-output" class="btn btn-secondary">Clear Output</button>
+            <label>
+                <input type="checkbox" id="verbose-mode" checked> Verbose Output
+            </label>
+        </div>
+        
+        <div id="test-results" class="test-results" style="display: none;">
+            <div class="test-stats">
+                <div class="stat-card">
+                    <div class="stat-number passed" id="passed-count">0</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number failed" id="failed-count">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number total" id="total-count">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number rate" id="success-rate">0%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-output" id="test-output">
+            <div style="color: #888;">Click "Run Tests" to start the test suite...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { runApiClientTests } from './api-client.test.js';
+        
+        const runButton = document.getElementById('run-tests');
+        const clearButton = document.getElementById('clear-output');
+        const testOutput = document.getElementById('test-output');
+        const testResults = document.getElementById('test-results');
+        const testStatus = document.getElementById('test-status');
+        const runText = document.getElementById('run-text');
+        const loading = document.getElementById('loading');
+        const verboseMode = document.getElementById('verbose-mode');
+        
+        // Capture console output
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            group: console.group,
+            groupEnd: console.groupEnd,
+            warn: console.warn,
+            info: console.info
+        };
+        
+        let outputBuffer = [];
+        let isRunning = false;
+        
+        function captureConsole() {
+            console.log = (...args) => {
+                const message = args.map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                ).join(' ');
+                outputBuffer.push({ type: 'log', message });
+                if (verboseMode.checked) {
+                    originalConsole.log(...args);
+                }
+            };
+            
+            console.error = (...args) => {
+                const message = args.map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                ).join(' ');
+                outputBuffer.push({ type: 'error', message });
+                originalConsole.error(...args);
+            };
+            
+            console.group = (label) => {
+                outputBuffer.push({ type: 'group', message: label });
+                if (verboseMode.checked) {
+                    originalConsole.group(label);
+                }
+            };
+            
+            console.groupEnd = () => {
+                outputBuffer.push({ type: 'groupEnd', message: '' });
+                if (verboseMode.checked) {
+                    originalConsole.groupEnd();
+                }
+            };
+            
+            console.warn = (...args) => {
+                const message = args.map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                ).join(' ');
+                outputBuffer.push({ type: 'warn', message });
+                if (verboseMode.checked) {
+                    originalConsole.warn(...args);
+                }
+            };
+        }
+        
+        function restoreConsole() {
+            Object.assign(console, originalConsole);
+        }
+        
+        function renderOutput() {
+            let html = '';
+            let indentLevel = 0;
+            
+            outputBuffer.forEach(({ type, message }) => {
+                const indent = '  '.repeat(indentLevel);
+                
+                switch (type) {
+                    case 'group':
+                        html += `<div style="color: #569cd6; font-weight: bold;">${indent}${message}</div>`;
+                        indentLevel++;
+                        break;
+                    case 'groupEnd':
+                        indentLevel = Math.max(0, indentLevel - 1);
+                        break;
+                    case 'error':
+                        html += `<div class="error-details">${indent}${message}</div>`;
+                        break;
+                    case 'warn':
+                        html += `<div style="color: #d19a66;">${indent}⚠️ ${message}</div>`;
+                        break;
+                    case 'log':
+                        if (message.includes('✅')) {
+                            html += `<div class="success-details">${indent}${message}</div>`;
+                        } else if (message.includes('❌')) {
+                            html += `<div class="error-details">${indent}${message}</div>`;
+                        } else {
+                            html += `<div style="color: #d4d4d4;">${indent}${message}</div>`;
+                        }
+                        break;
+                }
+            });
+            
+            testOutput.innerHTML = html;
+            testOutput.scrollTop = testOutput.scrollHeight;
+        }
+        
+        function updateResults(results) {
+            document.getElementById('passed-count').textContent = results.passed;
+            document.getElementById('failed-count').textContent = results.failed;
+            document.getElementById('total-count').textContent = results.total;
+            
+            const successRate = results.total > 0 ? 
+                ((results.passed / results.total) * 100).toFixed(1) : 0;
+            document.getElementById('success-rate').textContent = `${successRate}%`;
+            
+            testResults.style.display = 'block';
+            
+            if (results.failed === 0) {
+                testResults.className = 'test-results success';
+                testStatus.innerHTML = '<span style="color: #28a745;">✅ All tests passed!</span>';
+            } else {
+                testResults.className = 'test-results failure';
+                testStatus.innerHTML = '<span style="color: #dc3545;">❌ Some tests failed</span>';
+            }
+        }
+        
+        async function runTests() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            runText.style.display = 'none';
+            loading.style.display = 'inline-block';
+            runButton.disabled = true;
+            
+            testResults.className = 'test-results running';
+            testResults.style.display = 'block';
+            testStatus.innerHTML = '<span style="color: #0c5460;">🔄 Running tests...</span>';
+            
+            outputBuffer = [];
+            captureConsole();
+            
+            try {
+                const results = await runApiClientTests();
+                updateResults(results);
+            } catch (error) {
+                originalConsole.error('Test runner error:', error);
+                testStatus.innerHTML = '<span style="color: #dc3545;">❌ Test runner failed</span>';
+            } finally {
+                restoreConsole();
+                renderOutput();
+                
+                isRunning = false;
+                runText.style.display = 'inline';
+                loading.style.display = 'none';
+                runButton.disabled = false;
+            }
+        }
+        
+        function clearOutput() {
+            outputBuffer = [];
+            testOutput.innerHTML = '<div style="color: #888;">Output cleared. Click "Run Tests" to start...</div>';
+            testResults.style.display = 'none';
+            testStatus.innerHTML = '';
+        }
+        
+        // Event listeners
+        runButton.addEventListener('click', runTests);
+        clearButton.addEventListener('click', clearOutput);
+        
+        // Auto-render output periodically during test runs
+        setInterval(() => {
+            if (isRunning && outputBuffer.length > 0) {
+                renderOutput();
+            }
+        }, 500);
+        
+        // Initial message
+        originalConsole.log('🧪 API Client Test Suite Ready');
+        originalConsole.log('Click "Run Tests" to execute the comprehensive test suite');
+    </script>
+</body>
+</html>

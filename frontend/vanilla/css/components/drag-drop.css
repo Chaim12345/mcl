@@ -1,0 +1,392 @@
+/* Drag and Drop Styles */
+
+/* Draggable Items */
+.draggable-enabled {
+    cursor: grab !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.draggable-enabled:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.draggable-enabled:active {
+    cursor: grabbing !important;
+}
+
+/* Dragging State */
+.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.touch-dragging {
+    opacity: 0.3;
+    transform: scale(0.95);
+}
+
+/* Drag Preview */
+.drag-preview {
+    transform: rotate(3deg) scale(1.02);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    border: 2px solid var(--color-primary);
+    border-radius: 8px;
+    background-color: var(--color-background);
+    z-index: 10000;
+}
+
+.touch-drag-preview {
+    transform: scale(1.05) rotate(3deg);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+    border: 3px solid var(--color-primary);
+    border-radius: 12px;
+    background-color: var(--color-background);
+    z-index: 10000;
+}
+
+/* Drop Zones */
+.drop-zone-active {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.drop-zone-active::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 2px dashed var(--color-primary-alpha-50);
+    border-radius: 8px;
+    background-color: var(--color-primary-alpha-5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.drop-zone-hover {
+    background-color: var(--color-primary-alpha-10) !important;
+    border-color: var(--color-primary) !important;
+}
+
+.drop-zone-hover::before {
+    opacity: 1;
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-alpha-10);
+}
+
+/* Table Row Drop Zones */
+.board-table-row.drop-zone-active {
+    position: relative;
+}
+
+.board-table-row.drop-zone-hover {
+    background-color: var(--color-primary-alpha-5);
+}
+
+/* Kanban Column Drop Zones */
+.kanban-column-content.drop-zone-active {
+    min-height: 100px;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.kanban-column-content.drop-zone-hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-alpha-5);
+}
+
+/* Drop Indicator */
+.drop-indicator {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.drop-indicator--line {
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.drop-indicator--line::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: -4px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-background);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.drop-indicator--line::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: -4px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-background);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.drop-indicator--append {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary-alpha-10);
+    border: 2px dashed var(--color-primary);
+    border-radius: 8px;
+    color: var(--color-primary);
+}
+
+.drop-indicator-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.drop-indicator-icon {
+    animation: pulse 2s infinite;
+}
+
+.drop-indicator-text {
+    user-select: none;
+}
+
+/* Drop Zone Animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes dropZoneReveal {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.drop-zone-active {
+    animation: dropZoneReveal 0.3s ease forwards;
+}
+
+/* Hover Effects */
+.drop-zone-active:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Drag Ghost (for browsers that support it) */
+.drag-ghost {
+    opacity: 0.5;
+    background-color: var(--color-muted-100);
+    border: 2px dashed var(--color-border);
+}
+
+/* Auto-scroll indicators */
+.auto-scroll-up,
+.auto-scroll-down {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 9998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.auto-scroll-up {
+    top: 20px;
+}
+
+.auto-scroll-down {
+    bottom: 20px;
+}
+
+.auto-scroll-active .auto-scroll-up,
+.auto-scroll-active .auto-scroll-down {
+    opacity: 1;
+}
+
+/* Mobile Touch Enhancements */
+@media (max-width: 768px) {
+    .draggable-enabled {
+        /* Larger touch targets */
+        min-height: 44px;
+    }
+    
+    .drop-indicator--line {
+        height: 6px;
+    }
+    
+    .drop-indicator--line::before,
+    .drop-indicator--line::after {
+        width: 16px;
+        height: 16px;
+        top: -5px;
+    }
+    
+    .drop-zone-active::before {
+        border-width: 3px;
+    }
+    
+    .touch-drag-preview {
+        transform: scale(1.1) rotate(5deg);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .drop-zone-active::before {
+        border-style: solid;
+        border-width: 3px;
+    }
+    
+    .drop-indicator--line {
+        background: var(--color-primary);
+        height: 6px;
+    }
+    
+    .dragging {
+        opacity: 0.7;
+        outline: 3px solid var(--color-primary);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .draggable-enabled,
+    .drop-zone-active,
+    .drop-indicator,
+    .drag-preview,
+    .touch-drag-preview {
+        transition: none;
+        animation: none;
+    }
+    
+    .drop-indicator-icon {
+        animation: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .drag-preview,
+    .touch-drag-preview {
+        border-color: var(--color-primary-light);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+    }
+    
+    .drop-zone-active::before {
+        background-color: var(--color-primary-alpha-10);
+    }
+    
+    .drop-indicator--line {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* Loading state during drag operations */
+.drag-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.drag-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: inherit;
+    z-index: 1000;
+}
+
+.drag-loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    z-index: 1001;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success/Error feedback */
+.drag-success {
+    background-color: var(--color-success-alpha-10);
+    border-color: var(--color-success);
+    animation: successPulse 0.6s ease;
+}
+
+.drag-error {
+    background-color: var(--color-danger-alpha-10);
+    border-color: var(--color-danger);
+    animation: errorShake 0.6s ease;
+}
+
+@keyframes successPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes errorShake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-4px);
+    }
+    75% {
+        transform: translateX(4px);
+    }
+} 

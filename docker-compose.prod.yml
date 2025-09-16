@@ -1,56 +1,55 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: pm-postgres-prod
+  mongodb:
+    image: mongo:7.0
+    container_name: pm-mongodb-prod
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-project_management}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-project_management}
     volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
+      - mongodb_data_prod:/data/db
     networks:
       - pm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  redis:
-    image: redis:7-alpine
-    container_name: pm-redis-prod
-    volumes:
-      - redis_data_prod:/data
-    networks:
-      - pm-network
-    restart: unless-stopped
-
-  backend:
+  app:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
-    container_name: pm-backend-prod
+      context: .
+      dockerfile: Dockerfile
+    container_name: pm-app-prod
     environment:
-      NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: redis://redis:6379
+      DATABASE_URI: mongodb://${MONGO_ROOT_USERNAME:-root}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${MONGO_DATABASE:-project_management}?authSource=admin
+      DATABASE_NAME: ${MONGO_DATABASE:-project_management}
       JWT_SECRET: ${JWT_SECRET}
-      PORT: 3001
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION:-15m}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-168h}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      FROM_ADDRESS: ${FROM_ADDRESS}
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      ENVIRONMENT: production
     depends_on:
-      - postgres
-      - redis
+      mongodb:
+        condition: service_healthy
     networks:
       - pm-network
     restart: unless-stopped
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-    container_name: pm-frontend-prod
-    depends_on:
-      - backend
-    networks:
-      - pm-network
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   nginx:
     image: nginx:alpine
@@ -59,18 +58,22 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
-      - frontend
-      - backend
+      app:
+        condition: service_healthy
     networks:
       - pm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
-  postgres_data_prod:
-  redis_data_prod:
+  mongodb_data_prod:
 
 networks:
   pm-network:

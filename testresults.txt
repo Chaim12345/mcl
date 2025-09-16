@@ -1,0 +1,11 @@
+?   	project-management-platform/cmd/server	[no test files]
+ok  	project-management-platform/internal/auth	(cached)
+?   	project-management-platform/internal/config	[no test files]
+ok  	project-management-platform/internal/database	(cached)
+ok  	project-management-platform/internal/handlers	(cached)
+?   	project-management-platform/internal/middleware	[no test files]
+ok  	project-management-platform/internal/models	(cached)
+ok  	project-management-platform/internal/repository	(cached)
+?   	project-management-platform/internal/repository/mocks	[no test files]
+ok  	project-management-platform/internal/services	(cached)
+?   	project-management-platform/internal/testutils	[no test files]

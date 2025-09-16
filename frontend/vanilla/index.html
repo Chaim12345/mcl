@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Platform</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/base/reset.css">
+    <link rel="stylesheet" href="/css/base/variables.css">
+    <link rel="stylesheet" href="/css/base/typography.css">
+    <link rel="stylesheet" href="/css/base/responsive-layout.css">
+    <link rel="stylesheet" href="/css/utilities/utilities.css">
+    <link rel="stylesheet" href="/css/utilities/responsive-utilities.css">
+    <link rel="stylesheet" href="/css/components/components.css">
+    <link rel="stylesheet" href="/css/components/enhanced-ui.css">
+    <link rel="stylesheet" href="/css/components/comments.css">
+    <link rel="stylesheet" href="/css/components/responsive-components.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-spinner"></div>
+            <p>🚀 Loading from the future! (or maybe the past? 🕰️)</p>
+        </div>
+        
+        <!-- Main App Content -->
+        <div id="app-content" class="app-content hidden">
+            <!-- Mobile Navigation Toggle -->
+            <button id="mobile-nav-toggle" class="mobile-nav-toggle">
+                <span class="nav-icon">☰</span>
+            </button>
+            
+            <!-- Mobile Navigation Overlay -->
+            <div id="mobile-nav-overlay" class="mobile-nav-overlay"></div>
+            
+            <!-- Navigation -->
+            <nav id="main-nav" class="main-nav">
+                <!-- Navigation will be rendered by JavaScript -->
+            </nav>
+            
+            <!-- Main Content Area -->
+            <main id="main-content" class="main-content">
+                <!-- Page content will be rendered by JavaScript -->
+            </main>
+            
+            <!-- Modals Container -->
+            <div id="modals-container" class="modals-container">
+                <!-- Modals will be rendered by JavaScript -->
+            </div>
+            
+            <!-- Notifications Container -->
+            <div id="notifications-container" class="notifications-container">
+                <!-- Notifications will be rendered by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript Modules -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

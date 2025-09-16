@@ -10,19 +10,23 @@ const apiClient = axios.create({
   },
 });
 
-// Debug logging
-console.log('API Client initialized with baseURL:', '/api');
+// Debug logging (only in development)
+if (process.env.NODE_ENV === 'development') {
+  console.log('API Client initialized with baseURL:', '/api');
+}
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;
-    console.log('API Request:', {
-      url: config.url,
-      method: config.method,
-      hasToken: !!token,
-      tokenPreview: token ? `${token.substring(0, 20)}...` : 'none'
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Request:', {
+        url: config.url,
+        method: config.method,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 10)}...` : 'none'
+      });
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -76,13 +80,15 @@ apiClient.interceptors.response.use(
     
     // Format error response
     const errorData = error.response?.data as any;
-    console.error('API Error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: errorData,
-      url: error.config?.url,
-      method: error.config?.method,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.error('API Error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: errorData,
+        url: error.config?.url,
+        method: error.config?.method,
+      });
+    }
     
     const errorResponse: ApiError = {
       code: errorData?.code || 'unknown_error',

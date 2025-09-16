@@ -1,77 +1,82 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: pm-postgres-dev
-    environment:
-      POSTGRES_DB: project_management_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data_dev:/var/lib/postgresql/data
-      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - pm-network
+    mongodb:
+        image: mongo:7.0
+        container_name: pm-mongodb-dev
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongodb_data:/data/db
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: password
+            MONGO_INITDB_DATABASE: project_management_dev
+        networks:
+            - pm-network
+        healthcheck:
+            test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-  redis:
-    image: redis:7-alpine
-    container_name: pm-redis-dev
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data_dev:/data
-    networks:
-      - pm-network
+    redis:
+        image: redis:7.0-alpine
+        container_name: pm-redis-dev
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        networks:
+            - pm-network
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-  backend:
-    build:
-      context: .
-      dockerfile: ./backend/Dockerfile.dev
-    container_name: pm-backend-dev
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/project_management_dev
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: dev-jwt-secret-key
-      PORT: 3001
-    ports:
-      - "3001:3001"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - pm-network
-    command: npm run dev
-
-  frontend:
-    build:
-      context: .
-      dockerfile: ./frontend/Dockerfile.dev
-    container_name: pm-frontend-dev
-    environment:
-      VITE_API_URL: http://localhost:3001
-      VITE_WS_URL: http://localhost:3001
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    networks:
-      - pm-network
-    command: npm run dev
-
-volumes:
-  postgres_data_dev:
-  redis_data_dev:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile.dev
+        container_name: pm-app-dev
+        ports:
+            - "8080:8080"
+        depends_on:
+            mongodb:
+                condition: service_healthy
+        volumes:
+            - ./internal:/app/internal
+            - ./cmd:/app/cmd
+            - ./frontend/vanilla:/app/frontend/vanilla
+            - ./go.mod:/app/go.mod
+            - ./go.sum:/app/go.sum
+            - ./.air.toml:/app/.air.toml
+            - ./.env:/app/.env
+        environment:
+            - GIN_MODE=debug
+            - DATABASE_URI=mongodb://root:password@mongodb:27017/project_management_dev?authSource=admin
+            - DATABASE_NAME=project_management_dev
+            - JWT_SECRET=your_super_secret_key_change_me_in_production
+            - JWT_ACCESS_EXPIRATION=15m
+            - JWT_REFRESH_EXPIRATION=168h
+            - SMTP_HOST=mail.cock.li
+            - SMTP_PORT=465
+            - SMTP_SECURE=true
+            - SMTP_USER=chaim12345@cock.li
+            - SMTP_PASS=Aa123456789!
+            - FROM_ADDRESS=chaim12345@cock.li
+            - SERVER_HOST=0.0.0.0
+            - SERVER_PORT=8080
+            - ENVIRONMENT=development
+        networks:
+            - pm-network
+        restart: unless-stopped
 
 networks:
-  pm-network:
-    driver: bridge
+    pm-network:
+        driver: bridge
+
+volumes:
+    mongodb_data:
+    redis_data:
