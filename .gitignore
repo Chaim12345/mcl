@@ -80,3 +80,15 @@ uploads/
 
 # Test coverage
 coverage/
+
+# Binaries and executables
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+main
+server
+app
+test_*
+*_test
