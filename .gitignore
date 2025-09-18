@@ -81,6 +81,12 @@ uploads/
 # Test coverage
 coverage/
 
+# Test reports and results
+frontend/playwright-report/
+frontend/test-results/
+test-results/
+playwright-report/
+
 # Binaries and executables
 *.exe
 *.dll
