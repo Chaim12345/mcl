@@ -87,8 +87,8 @@ coverage/
 *.so
 *.dylib
 bin/
-main
-server
-app
+/main
+/server
+/app
 test_*
 *_test
