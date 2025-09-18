@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Item Management - Project Management Platform</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/enhanced-ui.css">
+    <link rel="stylesheet" href="css/item-display-editor.css">
+    <link rel="stylesheet" href="css/animations-enhanced.css">
+    <link rel="stylesheet" href="css/tooltips-enhanced.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="logo-icon">📋</div>
+                <h1>PM Platform</h1>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="boards.html" class="nav-link">Boards</a>
+                </li>
+                <li class="nav-item">
+                    <a href="item-management-demo.html" class="nav-link active">Items</a>
+                </li>
+                <li class="nav-item">
+                    <a href="workspaces.html" class="nav-link">Workspaces</a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <div class="user-menu">
+                    <img src="assets/images/default-avatar.png" alt="User" class="user-avatar">
+                    <span class="user-name">Demo User</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Enhanced Item Management</h1>
+                    <p class="header-subtitle">Comprehensive item display and editing with inline editing, detail
+                        sidebar, and bulk operations</p>
+                </div>
+                <div class="header-right">
+                    <div class="header-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-items">0</div>
+                            <div class="stat-label">Total Items</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="completed-items">0</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="in-progress-items">0</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item Display Editor Container -->
+        <div id="item-display-container" class="content-container">
+            <!-- ItemDisplayEditor will be rendered here -->
+        </div>
+
+        <!-- Feature Highlights -->
+        <div class="feature-highlights">
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">✏️</div>
+                    <h3>Inline Editing</h3>
+                    <p>Click any cell to edit items directly in the table with real-time validation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👁️</div>
+                    <h3>Detail Sidebar</h3>
+                    <p>View and edit comprehensive item details in a dedicated sidebar panel</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Bulk Operations</h3>
+                    <p>Select multiple items for bulk delete, duplicate, or export operations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Smart Fields</h3>
+                    <p>Status, priority, assignee, progress, and tag fields with specialized editors</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Responsive</h3>
+                    <p>Optimized interface that works seamlessly on all device sizes</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time Updates</h3>
+                    <p>Changes are saved automatically with visual feedback and error handling</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notifications Container -->
+    <div id="notifications-container" class="notifications-container"></div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading items...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ItemDisplayEditor } from './js/components/item/ItemDisplayEditor.js';
+
+        class ItemManagementDemo {
+            constructor() {
+                this.itemEditor = null;
+                this.init();
+            }
+
+            async init() {
+                this.showLoadingScreen();
+
+                try {
+                    // Initialize the item display editor
+                    const container = document.getElementById('item-display-container');
+                    this.itemEditor = new ItemDisplayEditor(container, {
+                        boardId: null, // Use demo data
+                        editable: true,
+                        showDetailSidebar: true
+                    });
+
+                    // Update stats after initialization
+                    setTimeout(() => {
+                        this.updateStats();
+                    }, 500);
+
+                    this.hideLoadingScreen();
+                } catch (error) {
+                    console.error('Error initializing item management demo:', error);
+                    this.showError('Failed to load item management interface');
+                    this.hideLoadingScreen();
+                }
+            }
+
+            updateStats() {
+                if (!this.itemEditor || !this.itemEditor.items) return;
+
+                const items = this.itemEditor.items;
+                const totalItems = items.length;
+                const completedItems = items.filter(item => item.status === 'done').length;
+                const inProgressItems = items.filter(item => item.status === 'working').length;
+
+                document.getElementById('total-items').textContent = totalItems;
+                document.getElementById('completed-items').textContent = completedItems;
+                document.getElementById('in-progress-items').textContent = inProgressItems;
+            }
+
+            showLoadingScreen() {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'flex';
+                }
+            }
+
+            hideLoadingScreen() {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            }
+
+            showError(message) {
+                const container = document.getElementById('item-display-container');
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">😞</div>
+                        <h3>Something went wrong</h3>
+                        <p>${message}</p>
+                        <button class="btn btn-primary" onclick="window.location.reload()">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the demo when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => new ItemManagementDemo());
+        } else {
+            new ItemManagementDemo();
+        }
+
+        // Make demo globally accessible for debugging
+        window.itemManagementDemo = new ItemManagementDemo();
+    </script>
+
+    <style>
+        /* Additional styles for the demo page */
+        .page-header {
+            background: var(--background-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 2rem 0;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+        }
+
+        .header-left h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-subtitle {
+            margin: 0;
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--background-secondary);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0;
+            height: calc(100vh - 200px);
+        }
+
+        .feature-highlights {
+            background: var(--background-primary);
+            padding: 4rem 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--background-secondary);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-state h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary);
+        }
+
+        .error-state p {
+            margin: 0 0 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-stats {
+                justify-content: center;
+            }
+
+            .stat-card {
+                min-width: 80px;
+                padding: 1rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .feature-highlights {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</body>
+
+</html>

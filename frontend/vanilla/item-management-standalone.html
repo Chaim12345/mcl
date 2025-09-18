@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Item Management - Standalone Demo</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/enhanced-ui.css">
+    <link rel="stylesheet" href="css/item-display-editor.css">
+    <link rel="stylesheet" href="css/animations-enhanced.css">
+    <link rel="stylesheet" href="css/tooltips-enhanced.css">
+    <style>
+        /* Standalone demo styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background-primary, #f8f9fa);
+            color: var(--text-primary, #333);
+        }
+
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .demo-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .demo-header p {
+            margin: 0;
+            font-size: 1.125rem;
+            opacity: 0.9;
+        }
+
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .demo-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.125rem;
+            color: #666;
+        }
+
+        .feature-showcase {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-item {
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .feature-description {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .demo-header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-container {
+                padding: 1rem;
+            }
+            
+            .demo-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading Enhanced Item Management...</div>
+        </div>
+    </div>
+
+    <!-- Demo Header -->
+    <header class="demo-header">
+        <h1>🚀 Enhanced Item Management</h1>
+        <p>Experience the power of modern project management with advanced item editing capabilities</p>
+    </header>
+
+    <!-- Main Demo Container -->
+    <div class="demo-container">
+        <!-- Stats Dashboard -->
+        <div class="demo-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-items">0</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completed-items">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="in-progress-items">0</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="pending-items">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+
+        <!-- Item Display Editor Container -->
+        <div id="item-display-container" class="item-display-container">
+            <!-- ItemDisplayEditor will be rendered here -->
+        </div>
+
+        <!-- Feature Showcase -->
+        <div class="feature-showcase">
+            <h2>✨ Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">✏️</div>
+                    <div class="feature-title">Inline Editing</div>
+                    <div class="feature-description">Click any cell to edit items directly in the table with real-time validation and auto-save</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">👁️</div>
+                    <div class="feature-title">Detail Sidebar</div>
+                    <div class="feature-description">Comprehensive item details in a sliding sidebar with rich form controls</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-title">Bulk Operations</div>
+                    <div class="feature-description">Select multiple items for bulk delete, duplicate, or export operations</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Smart Fields</div>
+                    <div class="feature-description">Status, priority, assignee, progress, and tag fields with specialized editors</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Mobile Responsive</div>
+                    <div class="feature-description">Optimized interface that works seamlessly on all device sizes</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Real-time Updates</div>
+                    <div class="feature-description">Changes are saved automatically with visual feedback and error handling</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Standalone demo implementation
+        class StandaloneItemDemo {
+            constructor() {
+                this.itemEditor = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    console.log('Initializing Standalone Item Management Demo...');
+                    
+                    // Show loading screen
+                    this.showLoading();
+
+                    // Wait a bit to show the loading animation
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // Import and initialize the ItemDisplayEditor
+                    const { ItemDisplayEditor } = await import('./js/components/item/ItemDisplayEditor.js');
+                    
+                    const container = document.getElementById('item-display-container');
+                    this.itemEditor = new ItemDisplayEditor(container, {
+                        boardId: null, // Use demo data
+                        editable: true,
+                        showDetailSidebar: true,
+                        showDemo: true
+                    });
+
+                    // Wait for initialization
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Update stats
+                    this.updateStats();
+
+                    // Hide loading screen
+                    this.hideLoading();
+
+                    console.log('Standalone demo initialized successfully!');
+
+                } catch (error) {
+                    console.error('Error initializing standalone demo:', error);
+                    this.showError(error.message);
+                    this.hideLoading();
+                }
+            }
+
+            showLoading() {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'flex';
+                }
+            }
+
+            hideLoading() {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            }
+
+            updateStats() {
+                if (!this.itemEditor || !this.itemEditor.items) {
+                    // Set default stats
+                    document.getElementById('total-items').textContent = '6';
+                    document.getElementById('completed-items').textContent = '2';
+                    document.getElementById('in-progress-items').textContent = '3';
+                    document.getElementById('pending-items').textContent = '1';
+                    return;
+                }
+
+                const items = this.itemEditor.items;
+                const totalItems = items.length;
+                const completedItems = items.filter(item => item.status === 'done').length;
+                const inProgressItems = items.filter(item => item.status === 'working').length;
+                const pendingItems = items.filter(item => item.status === 'todo').length;
+
+                document.getElementById('total-items').textContent = totalItems;
+                document.getElementById('completed-items').textContent = completedItems;
+                document.getElementById('in-progress-items').textContent = inProgressItems;
+                document.getElementById('pending-items').textContent = pendingItems;
+            }
+
+            showError(message) {
+                const container = document.getElementById('item-display-container');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">😞</div>
+                        <h3 style="color: #e74c3c; margin-bottom: 1rem;">Something went wrong</h3>
+                        <p style="color: #666; margin-bottom: 2rem;">${message}</p>
+                        <button onclick="window.location.reload()" style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem;">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the demo when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => new StandaloneItemDemo());
+        } else {
+            new StandaloneItemDemo();
+        }
+
+        // Make demo globally accessible for debugging
+        window.standaloneDemo = new StandaloneItemDemo();
+    </script>
+</body>
+</html>

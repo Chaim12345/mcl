@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Kirom</title>
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/components.css">
+    <link rel="stylesheet" href="./css/notifications.css">
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">Kirom</a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/dashboard" class="nav-link" data-page="dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/boards" class="nav-link" data-page="boards">Boards</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/calendar" class="nav-link" data-page="calendar">Calendar</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/workspaces.html" class="nav-link" data-page="workspaces">Workspaces</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/notifications" class="nav-link active" data-page="notifications">Notifications</a>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn btn-icon notification-btn" id="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge" id="notification-badge">3</span>
+                </button>
+                <button class="btn btn-icon"><img src="/assets/icons/user.svg" alt="Profile"></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="notifications-container">
+            <div class="notifications-header">
+                <h1>Notifications</h1>
+                <div class="notification-actions">
+                    <button class="btn btn-secondary btn-sm" id="mark-all-read">Mark all as read</button>
+                    <button class="btn btn-outline btn-sm" id="clear-all">Clear all</button>
+                </div>
+            </div>
+
+            <div class="notification-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="mentions">Mentions</button>
+                <button class="filter-btn" data-filter="updates">Updates</button>
+                <button class="filter-btn" data-filter="system">System</button>
+            </div>
+
+            <div class="notifications-list" id="notifications-list">
+                <!-- Notifications will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Kirom. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { NotificationManager } from './js/components/notifications/NotificationManager.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const notificationManager = new NotificationManager();
+            await notificationManager.init();
+        });
+    </script>
+</body>
+</html>

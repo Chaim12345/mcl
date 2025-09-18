@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Project Management</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <p>Don't have an account? <a href="/register">Register</a></p>
+        <p><a href="/forgot-password.html">Forgot password?</a></p>
+    </div>
+    <script type="module">
+        import { apiClient } from './js/services/ApiClient.js';
+
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await apiClient.post('/auth/login', { email, password });
+                console.log('Login response:', response); // Debug log
+                
+                // The response has structure {success: true, data: {accessToken: "...", refreshToken: "..."}}
+                const token = response.data.accessToken;
+
+                if (token) {
+                    // Save token
+                    localStorage.setItem('auth_token', token);
+                    console.log('Token saved:', token); // Debug log
+
+                    // Redirect to dashboard
+                    window.location.href = '/dashboard';
+                } else {
+                    console.error('No token received in response:', response);
+                    alert('Login failed: No authentication token received');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + (error.message || 'Please try again'));
+            }
+        });
+    </script>
+</body>
+</html>

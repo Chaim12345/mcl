@@ -1,0 +1,267 @@
+/* File Attachment Cell Styles */
+
+.file-cell-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.file-cell-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.file-count-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-small);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  transition: var(--transition-fast);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.file-count-badge:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-small);
+}
+
+.file-count {
+  font-weight: 600;
+}
+
+.file-icon {
+  font-size: 14px;
+}
+
+.file-add-btn {
+  background: none;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius-small);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  color: var(--text-tertiary);
+}
+
+.file-add-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background-color: rgba(0, 200, 117, 0.05);
+}
+
+.file-add-icon {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.file-cell-expanded {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--shadow-medium);
+  z-index: 1000;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.file-cell-expanded.open {
+  max-height: 400px;
+  margin-top: var(--spacing-xs);
+}
+
+.file-cell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
+}
+
+.file-cell-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.file-cell-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.file-cell-close:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.file-cell-content {
+  padding: var(--spacing-sm);
+}
+
+.file-cell-content .file-attachment-container {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.file-cell-content .file-upload-area {
+  padding: var(--spacing-sm);
+  border-bottom: none;
+}
+
+.file-cell-content .file-drop-zone {
+  padding: var(--spacing-md);
+  border: 1px dashed var(--border-color);
+}
+
+.file-cell-content .file-drop-icon {
+  font-size: 32px;
+}
+
+.file-cell-content .file-drop-text {
+  font-size: 14px;
+}
+
+.file-cell-content .file-list {
+  max-height: 200px;
+}
+
+.file-cell-content .file-item {
+  padding: var(--spacing-sm);
+}
+
+.file-cell-content .file-icon {
+  font-size: 20px;
+  margin-right: var(--spacing-sm);
+}
+
+.file-cell-content .file-name {
+  font-size: 13px;
+}
+
+.file-cell-content .file-meta {
+  font-size: 11px;
+}
+
+.file-cell-content .file-action-btn {
+  padding: 2px;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .file-count-badge {
+    padding: 2px var(--spacing-xs);
+    font-size: 11px;
+  }
+  
+  .file-add-btn {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .file-add-icon {
+    font-size: 14px;
+  }
+  
+  .file-cell-expanded.open {
+    max-height: 300px;
+  }
+  
+  .file-cell-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .file-cell-title {
+    font-size: 11px;
+  }
+  
+  .file-cell-content {
+    padding: var(--spacing-xs);
+  }
+  
+  .file-cell-content .file-drop-zone {
+    padding: var(--spacing-sm);
+  }
+  
+  .file-cell-content .file-drop-icon {
+    font-size: 28px;
+  }
+  
+  .file-cell-content .file-drop-text {
+    font-size: 13px;
+  }
+  
+  .file-cell-content .file-list {
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-count-badge {
+    padding: 1px 4px;
+    font-size: 10px;
+  }
+  
+  .file-add-btn {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .file-add-icon {
+    font-size: 12px;
+  }
+  
+  .file-cell-expanded.open {
+    max-height: 250px;
+  }
+  
+  .file-cell-content .file-drop-zone {
+    padding: var(--spacing-xs);
+  }
+  
+  .file-cell-content .file-drop-icon {
+    font-size: 24px;
+  }
+  
+  .file-cell-content .file-drop-text {
+    font-size: 12px;
+  }
+  
+  .file-cell-content .file-list {
+    max-height: 120px;
+  }
+}

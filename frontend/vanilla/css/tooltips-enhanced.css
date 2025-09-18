@@ -1,0 +1,102 @@
+/**
+ * Enhanced Tooltips and Help System
+ * Modern tooltips with rich content and positioning
+ */
+
+/* Base tooltip styles */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip::before,
+.tooltip::after {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translate3d(0, 0, 0);
+  z-index: 1000;
+}
+
+/* Tooltip content */
+.tooltip::after {
+  content: attr(data-tooltip);
+  background: var(--tooltip-bg, #333);
+  color: var(--tooltip-text, white);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  max-width: 250px;
+  white-space: normal;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* Tooltip arrow */
+.tooltip::before {
+  content: '';
+  border: 6px solid transparent;
+}
+
+/* Default position: top */
+.tooltip::after {
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+}
+
+.tooltip::before {
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--tooltip-bg, #333);
+}
+
+/* Show tooltip on hover */
+.tooltip:hover::before,
+.tooltip:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Help indicators */
+.help-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--info-color);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: help;
+  margin-left: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.help-indicator:hover {
+  background: var(--info-color-dark);
+  transform: scale(1.1);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .tooltip::after {
+    font-size: 0.8125rem;
+    padding: 0.625rem 0.875rem;
+    max-width: 200px;
+  }
+  
+  /* On mobile, show tooltips on tap */
+  .tooltip:active::before,
+  .tooltip:active::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
