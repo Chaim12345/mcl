@@ -1,235 +1,237 @@
-# Project Management Platform - Documentation
+# Project Management Platform - Documentation Index
 
-## Overview
+Welcome to the comprehensive documentation for the Project Management Platform - a modern, production-grade project management tool built with Go and vanilla JavaScript.
 
-Welcome to the comprehensive documentation for the Project Management Platform. This modern, full-stack application is built with Go and vanilla JavaScript, designed to help teams organize, track, and collaborate on projects efficiently.
+## 📋 Documentation Overview
 
-## Documentation Structure
+This documentation provides detailed coverage of the entire codebase, from high-level architecture to individual file implementations. The documentation is organized for easy navigation and cross-referencing.
 
-### 📚 User Documentation
-- **[User Guide](user-guides/USER_GUIDE.md)** - Complete guide for end users
-- **[Admin Guide](user-guides/ADMIN_GUIDE.md)** - System administration and workspace management
+## 🗂️ Documentation Structure
 
-### 🔧 Technical Documentation
-- **[API Documentation](api/API_DOCUMENTATION.md)** - Complete REST API reference
-- **[Development Setup](development/DEVELOPMENT_SETUP.md)** - Developer environment setup
-- **[Configuration Guide](CONFIGURATION.md)** - System configuration options
-- **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Common issues and solutions
+### High-Level Documentation
 
-### 🚀 Deployment Documentation
-- **[Deployment Guide](deployment/DEPLOYMENT_GUIDE.md)** - Production deployment instructions
-- **[Monitoring Guide](deployment/MONITORING_GUIDE.md)** - Monitoring and observability setup
+1. **[Project Overview](./overview.md)**
+   - Project purpose and goals
+   - Technology stack overview
+   - Key features and capabilities
+   - Architecture summary
+   - Getting started guide
 
-## Quick Start
+2. **[System Architecture](./architecture.md)**
+   - Detailed system architecture diagrams
+   - Component interactions
+   - Data flow patterns
+   - Security architecture
+   - Scalability considerations
 
-### For Users
-1. Read the [User Guide](user-guides/USER_GUIDE.md) to learn how to use the platform
-2. Create your account and join a workspace
-3. Start creating boards and managing your projects
+3. **[API Documentation](./api.md)**
+   - Complete REST API reference
+   - Authentication flows
+   - Request/response examples
+   - Error codes and handling
+   - WebSocket endpoints
+
+4. **[Data Models](./data_models.md)**
+   - Database schema and relationships
+   - Entity relationship diagrams
+   - Index strategies
+   - Data validation rules
+   - Performance optimizations
+
+5. **[Frontend Architecture](./frontend.md)**
+   - Vanilla JavaScript component system
+   - State management patterns
+   - UI component documentation
+   - Performance optimizations
+   - Mobile responsiveness
+
+6. **[Deployment Guide](./deployment.md)**
+   - Development environment setup
+   - Production deployment strategies
+   - Docker containerization
+   - Cloud deployment options
+   - Monitoring and maintenance
+
+### Detailed File Documentation
+
+The `files/` directory contains detailed documentation for individual source files:
+
+#### Core Application Files
+- **[main.go](./files/main.go.md)** - Application entry point and orchestration
+- **[config.go](./files/config.go.md)** - Configuration management system
+- **[database_client.go](./files/database_client.go.md)** - MongoDB client initialization
+
+#### Authentication System
+- **[auth_handler.go](./files/auth_handler.go.md)** - HTTP authentication endpoints
+- **[jwt.go](./files/jwt.go.md)** - JWT token management
+- **[password.go](./files/password.go.md)** - Password security and validation
+
+## 🏗️ Architecture Quick Reference
+
+```mermaid
+graph TB
+    subgraph "Frontend (Vanilla JS)"
+        UI[User Interface]
+        COMP[Components]
+        SERV[Services]
+    end
+    
+    subgraph "Backend (Go)"
+        API[REST API]
+        WS[WebSocket]
+        AUTH[Authentication]
+        BIZ[Business Logic]
+    end
+    
+    subgraph "Data Layer"
+        MONGO[(MongoDB)]
+        CACHE[Cache]
+    end
+    
+    UI --> API
+    UI --> WS
+    API --> AUTH
+    API --> BIZ
+    BIZ --> MONGO
+    BIZ --> CACHE
+```
+
+## 🚀 Quick Start
 
 ### For Developers
-1. Follow the [Development Setup](development/DEVELOPMENT_SETUP.md) guide
-2. Review the [API Documentation](api/API_DOCUMENTATION.md)
-3. Check the [Configuration Guide](CONFIGURATION.md) for environment setup
+1. Read the [Project Overview](./overview.md) for context
+2. Review the [System Architecture](./architecture.md) for technical details
+3. Set up development environment using [Deployment Guide](./deployment.md)
+4. Explore [API Documentation](./api.md) for integration details
 
-### For Administrators
-1. Read the [Admin Guide](user-guides/ADMIN_GUIDE.md) for system management
-2. Follow the [Deployment Guide](deployment/DEPLOYMENT_GUIDE.md) for production setup
-3. Set up monitoring using the [Monitoring Guide](deployment/MONITORING_GUIDE.md)
+### For DevOps/Infrastructure
+1. Start with [Deployment Guide](./deployment.md)
+2. Review [System Architecture](./architecture.md) for scaling considerations
+3. Check [Data Models](./data_models.md) for database requirements
 
-## Architecture Overview
+### For Frontend Developers
+1. Review [Frontend Architecture](./frontend.md)
+2. Explore component examples in detailed file docs
+3. Check [API Documentation](./api.md) for backend integration
 
-### Backend (Go)
-- **RESTful API** with comprehensive endpoints
-- **MongoDB** for data persistence
-- **JWT authentication** with refresh tokens
-- **Comprehensive security** middleware
-- **Real-time features** with WebSocket support
-- **Structured logging** and monitoring
+### For Backend Developers
+1. Start with [System Architecture](./architecture.md)
+2. Review detailed file documentation in `files/`
+3. Check [Data Models](./data_models.md) for database operations
 
-### Frontend (Vanilla JavaScript)
-- **Component-based architecture** without frameworks
-- **Responsive design** with mobile support
-- **Real-time updates** and collaboration features
-- **Advanced search and filtering**
-- **Drag-and-drop** interface
-- **Progressive Web App** capabilities
+## 📚 Key Technologies
 
-### Key Features
-- **Multi-tenant workspaces** with role-based access
-- **Customizable boards** with flexible columns
-- **Rich item management** with comments and attachments
-- **Advanced search and filtering** capabilities
-- **Real-time collaboration** and notifications
-- **Comprehensive security** and audit logging
-- **Docker containerization** for easy deployment
-- **Monitoring and observability** built-in
+### Backend Stack
+- **Language**: Go 1.24+
+- **Framework**: Gin (HTTP router)
+- **Database**: MongoDB with official driver
+- **Authentication**: JWT with refresh tokens
+- **Real-time**: Gorilla WebSocket
+- **Configuration**: Koanf (YAML + env vars)
+- **Logging**: Logrus + structured logging
 
-## Technology Stack
-
-### Backend Technologies
-- **Go 1.21+** - Primary backend language
-- **MongoDB 6.0+** - Document database
-- **JWT** - Authentication and authorization
-- **Gorilla Mux** - HTTP routing
-- **Logrus** - Structured logging
-- **Prometheus** - Metrics collection
-
-### Frontend Technologies
-- **Vanilla JavaScript (ES6+)** - No framework dependencies
-- **CSS Custom Properties** - Theming and styling
-- **Web APIs** - Modern browser features
-- **Progressive Web App** - Offline capabilities
-- **WebSocket** - Real-time communication
+### Frontend Stack
+- **Language**: Vanilla JavaScript ES6+
+- **Architecture**: Component-based with event system
+- **Styling**: CSS3 with custom properties
+- **Build**: No build process (direct serving)
+- **Testing**: Custom test runner + Playwright
 
 ### Infrastructure
-- **Docker & Docker Compose** - Containerization
-- **Nginx** - Reverse proxy and load balancing
-- **Redis** - Caching and session storage
-- **Prometheus & Grafana** - Monitoring stack
-- **Let's Encrypt** - SSL/TLS certificates
+- **Containerization**: Docker with multi-stage builds
+- **Orchestration**: Docker Compose
+- **Reverse Proxy**: Nginx
+- **Monitoring**: Custom metrics + Prometheus integration
 
-## Getting Help
+## 🔧 Development Workflow
 
-### Documentation
-- Start with the relevant guide based on your role
-- Use the search function to find specific topics
-- Check the troubleshooting guide for common issues
+### Local Development
+```bash
+# Start development environment
+docker-compose -f docker-compose.dev.yml up -d
 
-### Support Channels
-- **GitHub Issues** - Bug reports and feature requests
-- **Documentation** - Comprehensive guides and references
-- **Community** - Discussions and Q&A
-- **Email Support** - Direct technical assistance
+# Or use the setup script
+./scripts/dev-setup.sh start
+```
 
-### Contributing
-- **Bug Reports** - Use GitHub Issues with detailed information
-- **Feature Requests** - Describe use cases and requirements
-- **Documentation** - Help improve guides and references
-- **Code Contributions** - Follow development guidelines
+### Testing
+```bash
+# Run backend tests
+go test ./...
 
-## Security
+# Run frontend tests
+cd frontend/vanilla && npm test
 
-### Security Features
-- **JWT-based authentication** with secure token handling
-- **Role-based access control** at workspace and system levels
-- **Input validation and sanitization** for all user data
-- **HTTPS enforcement** with security headers
-- **Rate limiting** to prevent abuse
-- **Audit logging** for security events
-- **CORS protection** for cross-origin requests
+# Run E2E tests
+npx playwright test
+```
 
-### Security Best Practices
-- **Regular updates** of dependencies and system components
-- **Strong password policies** with complexity requirements
-- **Secure configuration** following industry standards
-- **Regular security audits** and vulnerability assessments
-- **Backup and recovery** procedures for data protection
+### Building for Production
+```bash
+# Build Docker images
+docker-compose -f docker-compose.prod.yml build
 
-## Performance
+# Deploy to production
+docker-compose -f docker-compose.prod.yml up -d
+```
 
-### Performance Features
-- **Efficient database queries** with proper indexing
-- **Caching strategies** for frequently accessed data
-- **Lazy loading** and virtual scrolling for large datasets
-- **Optimized API responses** with pagination
-- **CDN support** for static assets
-- **Compression** for reduced bandwidth usage
+## 📖 Documentation Guidelines
 
-### Monitoring and Optimization
-- **Real-time metrics** collection and analysis
-- **Performance profiling** tools and techniques
-- **Database optimization** with query analysis
-- **Frontend performance** monitoring and optimization
-- **Capacity planning** based on usage patterns
+This documentation follows these principles:
 
-## Compliance and Standards
+1. **Comprehensive Coverage**: Every major component is documented
+2. **Cross-Referenced**: Documents link to related information
+3. **Example-Rich**: Code examples and usage patterns included
+4. **Up-to-Date**: Documentation reflects current implementation
+5. **Developer-Friendly**: Written for different skill levels and roles
 
-### Standards Compliance
-- **REST API** following industry best practices
-- **Security standards** including OWASP guidelines
-- **Accessibility** standards for inclusive design
-- **Data protection** regulations compliance
-- **Code quality** standards and testing practices
+## 🔍 Finding Information
 
-### Quality Assurance
-- **Comprehensive testing** with unit, integration, and e2e tests
-- **Code review** processes and quality gates
-- **Automated testing** in CI/CD pipelines
-- **Performance testing** and benchmarking
-- **Security testing** and vulnerability scanning
+### By Topic
+- **Authentication**: See [auth_handler.go](./files/auth_handler.go.md), [jwt.go](./files/jwt.go.md), [password.go](./files/password.go.md)
+- **Database Operations**: See [Data Models](./data_models.md), [database_client.go](./files/database_client.go.md)
+- **API Integration**: See [API Documentation](./api.md)
+- **Frontend Components**: See [Frontend Architecture](./frontend.md)
+- **Deployment**: See [Deployment Guide](./deployment.md)
 
-## Roadmap and Updates
+### By File Type
+- **Go Files**: Check `files/` directory for detailed documentation
+- **Configuration**: See [config.go](./files/config.go.md) and [Deployment Guide](./deployment.md)
+- **Frontend**: See [Frontend Architecture](./frontend.md)
+- **Database**: See [Data Models](./data_models.md)
 
-### Current Version: 1.0.0
-- Full-featured project management platform
-- Complete API and frontend implementation
-- Production-ready deployment configuration
-- Comprehensive documentation and guides
+## 🤝 Contributing to Documentation
 
-### Planned Features
-- **Mobile applications** for iOS and Android
-- **Advanced reporting** and analytics
-- **Third-party integrations** (Slack, GitHub, etc.)
-- **Advanced workflow automation**
-- **Enterprise features** and SSO integration
+When updating the codebase, please:
 
-### Update Policy
-- **Security updates** - Immediate release for critical issues
-- **Bug fixes** - Regular patch releases
-- **Feature updates** - Quarterly minor releases
-- **Major versions** - Annual releases with breaking changes
+1. Update relevant documentation files
+2. Add new files to the `files/` directory if needed
+3. Update cross-references between documents
+4. Include code examples for new features
+5. Update the API documentation for endpoint changes
 
-## License and Legal
+## 📞 Support and Questions
 
-### Open Source License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This documentation should answer most questions about the codebase. For specific implementation details:
 
-### Third-Party Dependencies
-All third-party dependencies are properly licensed and documented. See the dependency files for specific license information.
+1. Check the relevant documentation section first
+2. Look at the detailed file documentation
+3. Review code examples and usage patterns
+4. Check the API documentation for integration details
 
-### Data Privacy
-The platform is designed with privacy in mind, following data protection best practices and regulations.
+## 🔄 Documentation Updates
 
-## Contact Information
+This documentation is current as of the latest codebase analysis. When making significant changes to the system:
 
-### Development Team
-- **Project Lead** - lead@your-domain.com
-- **Backend Team** - backend@your-domain.com
-- **Frontend Team** - frontend@your-domain.com
-- **DevOps Team** - devops@your-domain.com
-
-### Support
-- **Technical Support** - support@your-domain.com
-- **Documentation** - docs@your-domain.com
-- **Security Issues** - security@your-domain.com
-- **General Inquiries** - info@your-domain.com
+- Update the relevant documentation files
+- Ensure cross-references remain accurate
+- Add new components to the appropriate sections
+- Update architecture diagrams if needed
 
 ---
 
-## Document Index
+**Total Documentation Files**: 12 comprehensive documents covering all aspects of the system
+**Coverage**: Complete codebase documentation with examples and integration guidance
+**Target Audience**: Developers, DevOps engineers, system architects, and technical stakeholders
 
-### User Documentation
-| Document | Description | Audience |
-|----------|-------------|----------|
-| [User Guide](user-guides/USER_GUIDE.md) | Complete user manual | End Users |
-| [Admin Guide](user-guides/ADMIN_GUIDE.md) | System administration | Administrators |
-
-### Technical Documentation
-| Document | Description | Audience |
-|----------|-------------|----------|
-| [API Documentation](api/API_DOCUMENTATION.md) | REST API reference | Developers |
-| [Development Setup](development/DEVELOPMENT_SETUP.md) | Dev environment setup | Developers |
-| [Configuration Guide](CONFIGURATION.md) | System configuration | Developers, Admins |
-| [Troubleshooting Guide](TROUBLESHOOTING.md) | Issue resolution | All Users |
-
-### Deployment Documentation
-| Document | Description | Audience |
-|----------|-------------|----------|
-| [Deployment Guide](deployment/DEPLOYMENT_GUIDE.md) | Production deployment | DevOps, Admins |
-| [Monitoring Guide](deployment/MONITORING_GUIDE.md) | Observability setup | DevOps, Admins |
-
----
-
-*Last updated: January 2024*
-*Documentation version: 1.0.0*
+This documentation provides a solid foundation for understanding, developing, and maintaining the Project Management Platform.
