@@ -1,119 +1,263 @@
 /**
- * Enhanced Error Handling System
- * Production-ready error handling with user-friendly notifications
+ * ErrorHandler - Centralized error handling system
+ * Provides consistent error handling across the application
  */
-
-export class ErrorHandler {
-    constructor() {
-        this.init();
+class ErrorHandler {
+  constructor() {
+    this.handlers = new Map();
+    this.defaultHandler = this.defaultErrorHandler.bind(this);
+    
+    // Register default handlers
+    this.registerHandler('NETWORK_ERROR', this.networkErrorHandler);
+    this.registerHandler('VALIDATION_ERROR', this.validationErrorHandler);
+    this.registerHandler('AUTH_ERROR', this.authErrorHandler);
+    
+    // Setup global error handlers
+    this.setupGlobalHandlers();
+  }
+  
+  /**
+   * Register a custom error handler for a specific error type
+   * @param {string} errorType - The error type to handle
+   * @param {function} handler - The handler function
+   */
+  registerHandler(errorType, handler) {
+    this.handlers.set(errorType, handler);
+  }
+  
+  /**
+   * Setup global error handlers
+   */
+  setupGlobalHandlers() {
+    // Handle uncaught exceptions
+    window.addEventListener('error', (event) => {
+      this.handleGlobalError(event.error, 'global');
+      event.preventDefault();
+      return true;
+    });
+    
+    // Handle unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+      this.handleGlobalError(event.reason, 'promise');
+      event.preventDefault();
+    });
+    
+    // Handle API errors
+    eventBus.on('api:error', (error, context) => {
+      this.handle(error, context);
+    });
+  }
+  
+  /**
+   * Handle an error
+   * @param {Error|Object} error - The error object
+   * @param {string} context - Context where error occurred
+   */
+  handle(error, context = 'unknown') {
+    const errorType = error.type || this.determineErrorType(error);
+    const handler = this.handlers.get(errorType) || this.defaultHandler;
+    
+    try {
+      handler(error, context);
+    } catch (handlerError) {
+      // If handler itself throws an error, fall back to default handler
+      this.defaultErrorHandler(handlerError, `Error in ${errorType} handler`);
+      this.defaultErrorHandler(error, context);
     }
-
-    init() {
-        // Global error handlers
-        window.addEventListener('error', (event) => {
-            this.handleError(event.error, 'JavaScript Error');
-        });
-
-        window.addEventListener('unhandledrejection', (event) => {
-            this.handleError(event.reason, 'Promise Rejection');
-        });
-
-        this.createNotificationContainer();
+  }
+  
+  /**
+   * Determine error type from error object
+   * @param {Error} error - The error object
+   * @returns {string} Error type
+   */
+  determineErrorType(error) {
+    if (error.message && error.message.includes('NetworkError')) {
+      return 'NETWORK_ERROR';
     }
-
-    handleError(error, type) {
-        console.error(`[${type}]:`, error);
-        
-        // Show user-friendly message
-        let message = 'An unexpected error occurred.';
-        if (error.message?.includes('fetch')) {
-            message = 'Connection error. Please check your internet connection.';
-        } else if (error.message?.includes('404')) {
-            message = 'Resource not found. Please try refreshing the page.';
-        }
-
-        this.showNotification('error', type, message);
+    
+    if (error.validationErrors) {
+      return 'VALIDATION_ERROR';
     }
-
-    showNotification(type, title, message) {
-        const container = document.getElementById('notification-container');
-        if (!container) return;
-
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <strong>${title}</strong>
-                <p>${message}</p>
-                <button class="notification-close">×</button>
-            </div>
-        `;
-
-        const closeBtn = notification.querySelector('.notification-close');
-        closeBtn.onclick = () => notification.remove();
-
-        container.appendChild(notification);
-
-        // Auto remove after 5 seconds
-        setTimeout(() => notification.remove(), 5000);
+    
+    if (error.status === 401 || error.status === 403) {
+      return 'AUTH_ERROR';
     }
+    
+    return 'GENERAL_ERROR';
+  }/**
+   * Default error handler
+   * @param {Error|Object} error - The error object
+   * @param {string} context - Context where error occurred
+   */
+  defaultErrorHandler(error, context) {
+    const errorMessage = error.message || 'An unexpected error occurred';
+    console.error(`[ErrorHandler] Unhandled error in ${context}:`, error);
+    
+    this.showUserMessage('Something went wrong. Please try again.');
+    this.reportErrorToServer(error, context);
+  }
 
-    createNotificationContainer() {
-        if (document.getElementById('notification-container')) return;
-
-        const container = document.createElement('div');
-        container.id = 'notification-container';
-        container.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            max-width: 400px;
-        `;
-        document.body.appendChild(container);
-
-        // Add styles
-        const styles = document.createElement('style');
-        styles.textContent = `
-            .notification {
-                background: white;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                margin-bottom: 12px;
-                padding: 16px;
-                border-left: 4px solid #ccc;
-                animation: slideIn 0.3s ease;
-            }
-            .notification-error { border-left-color: #ef4444; }
-            .notification-success { border-left-color: #10b981; }
-            .notification-warning { border-left-color: #f59e0b; }
-            .notification-close {
-                float: right;
-                background: none;
-                border: none;
-                font-size: 18px;
-                cursor: pointer;
-            }
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(styles);
+  /**
+   * Network error handler
+   * @param {Error|Object} error - The error object
+   * @param {string} context - Context where error occurred
+   */
+  networkErrorHandler(error, context) {
+    if (!navigator.onLine) {
+      this.showUserMessage('You are offline. Changes will sync when connection is restored.', 'warning');
+      return;
     }
-
-    // Public API
-    showSuccess(message, title = 'Success') {
-        this.showNotification('success', title, message);
+    
+    const status = error.status || (error.response && error.response.status);
+    if (status === 401 || status === 403) {
+      this.showUserMessage('Session expired. Please log in again.', 'warning');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+      return;
     }
-
-    showError(message, title = 'Error') {
-        this.showNotification('error', title, message);
+    
+    if (status === 429) {
+      this.showUserMessage('Too many requests. Please wait a moment.', 'warning');
+      return;
     }
+    
+    this.showUserMessage('Failed to connect to server. Please check your connection.', 'error');
+    this.reportErrorToServer(error, context);
+  }
 
-    showWarning(message, title = 'Warning') {
-        this.showNotification('warning', title, message);
+  /**
+   * Validation error handler
+   * @param {Error|Object} error - The error object
+   * @param {string} context - Context where error occurred
+   */
+  validationErrorHandler(error, context) {
+    if (error.validationErrors) {
+      // Show first validation error
+      const firstError = Object.values(error.validationErrors)[0];
+      this.showUserMessage(firstError, 'warning');
+    } else {
+      this.showUserMessage('Please check your input and try again.', 'warning');
     }
+  }
+
+  /**
+   * Authentication error handler
+   * @param {Error|Object} error - The error object
+   * @param {string} context - Context where error occurred
+   */
+  authErrorHandler(error, context) {
+    const status = error.status || (error.response && error.response.status);
+    
+    if (status === 401) {
+      this.showUserMessage('Session expired. Please log in again.', 'warning');
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+    } else if (status === 403) {
+      this.showUserMessage('You do not have permission to perform this action.', 'error');
+    } else {
+      this.showUserMessage('Authentication failed. Please check your credentials.', 'error');
+    }
+  }
+
+  /**
+   * Report error to server
+   * @param {Error|Object} error - The error object
+   * @param {string} context - Context where error occurred
+   */
+  reportErrorToServer(error, context) {
+    if (navigator.onLine) {
+      const errorData = {
+        message: error.message,
+        stack: error.stack,
+        context,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent
+      };
+      
+      // Send error report to server
+      fetch('/api/errors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(errorData),
+        // Don't reject if reporting fails
+        mode: 'no-cors'
+      });
+    }
+  }
+
+  /**
+   * Show user-facing message
+   * @param {string} message - Message to display
+   * @param {string} type - Message type (info, success, warning, error)
+   */
+  showUserMessage(message, type = 'info') {
+    // Emit event for UI components to handle
+    eventBus.emit('notification:show', {
+      message,
+      type,
+      duration: type === 'error' ? 8000 : 5000
+    });
+  }
+
+  /**
+   * Show enhanced error screen with details
+   * @param {string} message - User-friendly message
+   * @param {Error|Object} error - Original error object
+   */
+  showEnhancedError(message, error = null) {
+    const errorContainer = document.createElement('div');
+    errorContainer.className = 'enhanced-error-screen';
+    
+    errorContainer.innerHTML = `
+      <div class="error-content">
+        <div class="error-icon">😞</div>
+        <h2 class="error-title">Oops! Something went wrong</h2>
+        <p class="error-message">${message}</p>
+        ${error ? `
+        <details class="error-details">
+          <summary>Technical Details</summary>
+          <pre>${error.stack || error.message || error}</pre>
+        </details>` : ''}
+        <div class="error-actions">
+          <button class="btn btn-primary error-action-retry">Try Again</button>
+          <button class="btn btn-secondary error-action-home">Go Home</button>
+        </div>
+      </div>
+    `;
+    
+    // Add to DOM
+    document.body.appendChild(errorContainer);
+    
+    // Setup action handlers
+    const retryBtn = errorContainer.querySelector('.error-action-retry');
+    const homeBtn = errorContainer.querySelector('.error-action-home');
+    
+    if (retryBtn) {
+      retryBtn.addEventListener('click', () => {
+        document.body.removeChild(errorContainer);
+        window.location.reload();
+      });
+    }
+    
+    if (homeBtn) {
+      homeBtn.addEventListener('click', () => {
+        document.body.removeChild(errorContainer);
+        window.location.href = '/';
+      });
+    }
+  }
 }
 
-export default ErrorHandler;
+// Create singleton instance
+export const errorHandler = new ErrorHandler();
+
+// Export for legacy support
+if (typeof window !== 'undefined') {
+  window.errorHandler = errorHandler;
+}
