@@ -10,6 +10,8 @@ import AccessibilityManager from '../../utils/AccessibilityManager.js';
 import MobileFirstComponents from '../MobileFirstComponents.js';
 import AvatarGenerator from '../../utils/AvatarGenerator.js';
 import ErrorHandler from '../../utils/ErrorHandler.js';
+import { RealTimeService } from '../../utils/realTimeService.js';
+import { eventBus } from '../../utils/eventBus.js';
 
 export class MondayStyleBoard {
     constructor(container, options = {}) {
@@ -48,15 +50,421 @@ export class MondayStyleBoard {
         this.sortBy = { column: null, direction: 'asc' };
         this.pagination = { page: 1, pageSize: 50, total: 0 };
         
+        // Real-time collaboration
+        this.realTimeService = new RealTimeService();
+        this.realTimeSubscriptions = new Set();
+        this.optimisticUpdates = new Map();
+        this.userPresence = new Map();
+        this.typingIndicators = new Map();
+        
         this.init();
     }
 
     async init() {
         await this.loadBoard();
+        this.setupRealTime();
         this.render();
         this.setupEventListeners();
     }
-
+    
+    /**
+     * Set up real-time collaboration features
+     */
+    setupRealTime() {
+        if (!this.options.boardId) return;
+        
+        // Subscribe to board updates
+        const boardSubscription = this.realTimeService.subscribe(
+            `board:${this.options.boardId}`,
+            this.handleBoardEvent.bind(this)
+        );
+        this.realTimeSubscriptions.add(boardSubscription);
+        
+        // Subscribe to user presence
+        const presenceSubscription = this.realTimeService.subscribe(
+            `presence:board:${this.options.boardId}`,
+            this.handlePresenceEvent.bind(this)
+        );
+        this.realTimeSubscriptions.add(presenceSubscription);
+        
+        // Notify server we're viewing this board
+        this.realTimeService.send({
+            type: 'presence',
+            action: 'join',
+            room: `board:${this.options.boardId}`
+        });
+        
+        // Set up typing indicators
+        this.setupTypingIndicators();
+    }
+    
+    /**
+     * Handle real-time board events
+     * @param {Object} event - The event data
+     */
+    handleBoardEvent(event) {
+        try {
+            switch (event.action) {
+                case 'board:update':
+                    this.handleBoardUpdate(event.payload);
+                    break;
+                case 'item:created':
+                    this.handleItemCreated(event.payload);
+                    break;
+                case 'item:updated':
+                    this.handleItemUpdated(event.payload);
+                    break;
+                case 'item:deleted':
+                    this.handleItemDeleted(event.payload);
+                    break;
+                case 'item:moved':
+                    this.handleItemMoved(event.payload);
+                    break;
+                case 'comment:created':
+                    this.handleCommentCreated(event.payload);
+                    break;
+                case 'typing:start':
+                    this.handleTypingStart(event.payload);
+                    break;
+                case 'typing:stop':
+                    this.handleTypingStop(event.payload);
+                    break;
+                default:
+                    console.log('Unhandled board event:', event);
+            }
+        } catch (error) {
+            console.error('Error handling board event:', error);
+            this.errorHandler.handleError(error, 'Real-time event handling');
+        }
+    }
+    
+    /**
+     * Handle presence events (users joining/leaving)
+     * @param {Object} event - The presence event
+     */
+    handlePresenceEvent(event) {
+        try {
+            switch (event.action) {
+                case 'user:joined':
+                    this.handleUserJoined(event.user);
+                    break;
+                case 'user:left':
+                    this.handleUserLeft(event.user);
+                    break;
+                case 'user:typing':
+                    this.handleUserTyping(event.user, event.columnId, event.itemId);
+                    break;
+                case 'presence:update':
+                    this.updatePresenceDisplay();
+                    break;
+                default:
+                    console.log('Unhandled presence event:', event);
+            }
+        } catch (error) {
+            console.error('Error handling presence event:', error);
+        }
+    }
+    
+    /**
+     * Handle board metadata update
+     * @param {Object} payload - Board update payload
+     */
+    handleBoardUpdate(payload) {
+        if (payload.boardId !== this.currentBoard.id) return;
+        
+        // Check if this is an optimistic update confirmation
+        if (payload.optimisticId && this.optimisticUpdates.has(payload.optimisticId)) {
+            this.optimisticUpdates.delete(payload.optimisticId);
+            return; // Already applied optimistically
+        }
+        
+        // Update board metadata
+        this.currentBoard = {
+            ...this.currentBoard,
+            ...payload.board
+        };
+        
+        // Rerender if necessary
+        if (payload.changeType === 'columns') {
+            this.columns = payload.board.columns;
+            this.render();
+        }
+    }
+    
+    /**
+     * Handle new item creation
+     * @param {Object} payload - Item creation payload
+     */
+    handleItemCreated(payload) {
+        if (payload.boardId !== this.currentBoard.id) return;
+        
+        // Check if this is our own optimistic update
+        if (payload.optimisticId && this.optimisticUpdates.has(payload.optimisticId)) {
+            this.optimisticUpdates.delete(payload.optimisticId);
+            // Update the item with the server-assigned ID
+            const optimisticItem = this.items.find(item => item.optimisticId === payload.optimisticId);
+            if (optimisticItem) {
+                optimisticItem.id = payload.item.id;
+                optimisticItem.optimisticId = undefined;
+            }
+            this.render();
+            return;
+        }
+        
+        // Add new item
+        this.items.push(payload.item);
+        this.render();
+        
+        // Announce update for accessibility
+        this.accessibilityManager.announce(`New item "${payload.item.item}" added to the board`);
+    }
+    
+    /**
+     * Handle item update
+     * @param {Object} payload - Item update payload
+     */
+    handleItemUpdated(payload) {
+        if (payload.boardId !== this.currentBoard.id) return;
+        
+        // Check if this is our own optimistic update
+        if (payload.optimisticId && this.optimisticUpdates.has(payload.optimisticId)) {
+            this.optimisticUpdates.delete(payload.optimisticId);
+            return; // Already applied optimistically
+        }
+        
+        // Find and update the item
+        const index = this.items.findIndex(item => item.id === payload.itemId);
+        if (index !== -1) {
+            this.items[index] = {
+                ...this.items[index],
+                ...payload.updates
+            };
+            this.render();
+            
+            // Announce update for accessibility
+            const item = this.items[index];
+            const column = this.columns.find(c => c.id === payload.columnId);
+            this.accessibilityManager.announce(
+                `Item "${item.item}" updated in ${column?.name || 'column'}`
+            );
+        }
+    }
+    
+    /**
+     * Handle item deletion
+     * @param {Object} payload - Item deletion payload
+     */
+    handleItemDeleted(payload) {
+        if (payload.boardId !== this.currentBoard.id) return;
+        
+        // Check if this is our own optimistic update
+        if (payload.optimisticId && this.optimisticUpdates.has(payload.optimisticId)) {
+            this.optimisticUpdates.delete(payload.optimisticId);
+            return; // Already applied optimistically
+        }
+        
+        // Remove the item
+        this.items = this.items.filter(item => item.id !== payload.itemId);
+        this.render();
+        
+        // Announce update for accessibility
+        this.accessibilityManager.announce(`Item deleted from the board`);
+    }
+    
+    /**
+     * Handle item movement (reordering)
+     * @param {Object} payload - Item movement payload
+     */
+    handleItemMoved(payload) {
+        if (payload.boardId !== this.currentBoard.id) return;
+        
+        // Check if this is our own optimistic update
+        if (payload.optimisticId && this.optimisticUpdates.has(payload.optimisticId)) {
+            this.optimisticUpdates.delete(payload.optimisticId);
+            return; // Already applied optimistically
+        }
+        
+        // Reorder items
+        const itemIndex = this.items.findIndex(item => item.id === payload.itemId);
+        if (itemIndex !== -1) {
+            const [movedItem] = this.items.splice(itemIndex, 1);
+            this.items.splice(payload.newPosition, 0, movedItem);
+            this.render();
+        }
+    }
+    
+    /**
+     * Handle new comment
+     * @param {Object} payload - Comment creation payload
+     */
+    handleCommentCreated(payload) {
+        if (payload.boardId !== this.currentBoard.id) return;
+        
+        // Update the relevant item with the new comment
+        const itemIndex = this.items.findIndex(item => item.id === payload.itemId);
+        if (itemIndex !== -1) {
+            const item = this.items[itemIndex];
+            if (!item.comments) item.comments = [];
+            item.comments.push(payload.comment);
+            
+            // Highlight the updated item temporarily
+            this.highlightUpdatedItem(payload.itemId);
+            
+            this.render();
+        }
+    }
+    
+    /**
+     * Handle user joining the board
+     * @param {Object} user - User who joined
+     */
+    handleUserJoined(user) {
+        if (user.id !== this.currentUser?.id) {
+            this.userPresence.set(user.id, {
+                ...user,
+                status: 'online',
+                lastSeen: Date.now()
+            });
+            
+            // Announce for accessibility
+            if (user.id !== this.currentUser?.id) {
+                this.accessibilityManager.announce(`${user.name} joined the board`);
+            }
+            
+            this.updatePresenceDisplay();
+        }
+    }
+    
+    /**
+     * Handle user leaving the board
+     * @param {Object} user - User who left
+     */
+    handleUserLeft(user) {
+        this.userPresence.delete(user.id);
+        this.updatePresenceDisplay();
+        
+        // Announce for accessibility
+        if (user.id !== this.currentUser?.id) {
+            this.accessibilityManager.announce(`${user.name} left the board`);
+        }
+    }
+    
+    /**
+     * Handle user typing indicator
+     * @param {Object} user - User who is typing
+     * @param {string} columnId - Column being edited
+     * @param {string} itemId - Item being edited
+     */
+    handleUserTyping(user, columnId, itemId) {
+        if (user.id === this.currentUser?.id) return;
+        
+        const key = `${itemId}:${columnId}`;
+        this.typingIndicators.set(key, {
+            user,
+            timestamp: Date.now()
+        });
+        
+        // Clear after timeout
+        setTimeout(() => {
+            if (this.typingIndicators.get(key)?.timestamp <= Date.now() - 3000) {
+                this.typingIndicators.delete(key);
+                this.render();
+            }
+        }, 3000);
+        
+        this.render();
+    }
+    
+    /**
+     * Set up typing indicators for cell editing
+     */
+    setupTypingIndicators() {
+        // We'll use this to track when we start typing in cells
+        this.container.addEventListener('input', (e) => {
+            const cell = e.target.closest('.editable-cell');
+            if (cell && this.editingCell) {
+                const columnId = cell.dataset.column;
+                const itemId = cell.closest('tr').dataset.itemId;
+                
+                // Send typing event
+                this.realTimeService.send({
+                    type: 'typing',
+                    action: 'start',
+                    boardId: this.options.boardId,
+                    itemId,
+                    columnId
+                });
+                
+                // Clear previous timeout
+                if (this.typingTimeout) {
+                    clearTimeout(this.typingTimeout);
+                }
+                
+                // Set new timeout to send stop event
+                this.typingTimeout = setTimeout(() => {
+                    this.realTimeService.send({
+                        type: 'typing',
+                        action: 'stop',
+                        boardId: this.options.boardId,
+                        itemId,
+                        columnId
+                    });
+                }, 1500);
+            }
+        });
+    }
+    
+    /**
+     * Update presence display in the UI
+     */
+    updatePresenceDisplay() {
+        // This would update the UI with user presence indicators
+        // For example, showing avatars of users currently viewing the board
+    }
+    
+    /**
+     * Highlight an item that was updated by another user
+     * @param {string} itemId - ID of the item to highlight
+     */
+    highlightUpdatedItem(itemId) {
+        const itemElement = this.container.querySelector(`[data-item-id="${itemId}"]`);
+        if (itemElement) {
+            itemElement.classList.add('item-updated');
+            setTimeout(() => {
+                itemElement.classList.remove('item-updated');
+            }, 3000);
+        }
+    }
+    
+    /**
+     * Clean up real-time subscriptions
+     */
+    cleanupRealTime() {
+        // Unsubscribe from all real-time events
+        for (const subscriptionId of this.realTimeSubscriptions) {
+            this.realTimeService.unsubscribe(subscriptionId);
+        }
+        this.realTimeSubscriptions.clear();
+        
+        // Notify server we're leaving
+        if (this.options.boardId) {
+            this.realTimeService.send({
+                type: 'presence',
+                action: 'leave',
+                room: `board:${this.options.boardId}`
+            });
+        }
+    }
+    
+    /**
+     * Add optimistic update for real-time operations
+     * @param {string} optimisticId - Unique ID for this update
+     * @param {Function} rollback - Function to rollback the update
+     */
+    addOptimisticUpdate(optimisticId, rollback) {
+        this.optimisticUpdates.set(optimisticId, rollback);
+    }
+    
     async loadBoard() {
         this.showLoadingState('board');
         
@@ -501,6 +909,33 @@ export class MondayStyleBoard {
                 .dropdown-item:hover {
                     background: #f5f6f8;
                 }
+                
+                /* Real-time collaboration styles */
+                .item-updated {
+                    animation: highlight 3s ease-out;
+                }
+                
+                @keyframes highlight {
+                    0% { background-color: #e3f2fd; }
+                    100% { background-color: white; }
+                }
+                
+                .typing-indicator {
+                    position: absolute;
+                    bottom: -20px;
+                    left: 0;
+                    font-size: 12px;
+                    color: #676879;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+                
+                .typing-indicator::before {
+                    content: "•";
+                    color: #4CAF50;
+                    font-size: 16px;
+                }
             </style>
         `;
     }
@@ -576,6 +1011,7 @@ export class MondayStyleBoard {
                          aria-describedby="${col.id}-${item.id}-desc"
                          class="editable-cell">
                         ${this.renderCell(item, col)}
+                        ${this.renderTypingIndicator(item.id, col.id)}
                     </td>`
                 ).join('')}
             </tr>`
@@ -698,6 +1134,20 @@ export class MondayStyleBoard {
                 </div>
             </div>
         `;
+    }
+    
+    /**
+     * Render typing indicator for a cell if someone is typing
+     * @param {string} itemId - Item ID
+     * @param {string} columnId - Column ID
+     */
+    renderTypingIndicator(itemId, columnId) {
+        const key = `${itemId}:${columnId}`;
+        if (this.typingIndicators.has(key)) {
+            const indicator = this.typingIndicators.get(key);
+            return `<div class="typing-indicator">${indicator.user.name} is typing...</div>`;
+        }
+        return '';
     }
 
     renderCell(item, column) {
@@ -968,17 +1418,24 @@ export class MondayStyleBoard {
         const itemId = cell.closest('tr').dataset.itemId;
         const item = this.items.find(i => i.id === itemId);
 
-        // Update the item
+        // Generate optimistic ID for this update
+        const optimisticId = `opt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Store the current value for potential rollback
+        const oldValue = item[columnId];
+        
+        // Optimistically update the UI
         item[columnId] = newValue;
+        this.render();
+        
+        // Add to optimistic updates
+        this.addOptimisticUpdate(optimisticId, () => {
+            item[columnId] = oldValue;
+            this.render();
+        });
 
-        // Update the API (in a real app)
-        this.updateItemOnServer(itemId, { [columnId]: newValue });
-
-        // Re-render the cell
-        const column = this.columns.find(c => c.id === columnId);
-        cell.innerHTML = this.renderCell(item, column);
-
-        this.editingCell = null;
+        // Send update to server
+        this.updateItemOnServer(itemId, { [columnId]: newValue }, optimisticId);
     }
 
     cancelCellEdit() {
@@ -991,79 +1448,108 @@ export class MondayStyleBoard {
         this.editingCell = null;
     }
 
-    async updateItemOnServer(itemId, updates) {
+    async updateItemOnServer(itemId, updates, optimisticId) {
         try {
-            // await this.apiClient.put(`/api/items/${itemId}`, updates);
-            console.log('Updated item:', itemId, updates);
+            // In a real app, this would update the item on the server
+            // const response = await this.apiClient.put(`/api/items/${itemId}`, updates);
+            // console.log('Updated item:', itemId, updates);
+            
+            // For demo purposes, simulate a server call
+            setTimeout(() => {
+                // Send real-time update to other users
+                this.realTimeService.send({
+                    type: 'item:update',
+                    action: 'updated',
+                    boardId: this.options.boardId,
+                    itemId,
+                    columnId: Object.keys(updates)[0],
+                    updates,
+                    optimisticId
+                });
+            }, 300);
         } catch (error) {
             console.error('Error updating item:', error);
+            
+            // Rollback the optimistic update
+            if (optimisticId && this.optimisticUpdates.has(optimisticId)) {
+                const rollback = this.optimisticUpdates.get(optimisticId);
+                rollback();
+                this.optimisticUpdates.delete(optimisticId);
+            }
+            
+            this.errorHandler.handleError(error, 'Update item');
         }
     }
 
     addNewItem() {
         const newItem = {
-            id: Date.now().toString(),
+            id: `new-item-${Date.now()}`,
+            optimisticId: `new-${Date.now()}`,
             item: 'New Item',
-            person: null,
             status: 'Not Started',
             priority: 'Medium',
-            date: '',
-            timeline: null,
-            budget: 0,
-            files: [],
-            notes: ''
+            date: new Date().toISOString().split('T')[0]
         };
-
-        this.items.push(newItem);
         
-        // Re-render the current view
-        const content = this.container.querySelector('.board-content');
-        content.innerHTML = this.renderCurrentView();
-
-        // Focus on the new item's name cell for immediate editing
+        // Optimistically add the item
+        this.items.push(newItem);
+        this.render();
+        
+        // Add to optimistic updates
+        this.addOptimisticUpdate(newItem.optimisticId, () => {
+            this.items = this.items.filter(item => item.optimisticId !== newItem.optimisticId);
+            this.render();
+        });
+        
+        // Send to server
         setTimeout(() => {
-            const newRow = this.container.querySelector(`tr[data-item-id="${newItem.id}"]`);
-            const nameCell = newRow.querySelector('td[data-column="item"]');
-            if (nameCell) {
-                this.startCellEdit(nameCell);
-            }
-        }, 100);
+            // In a real app, this would create the item on the server
+            // const response = await this.apiClient.post(`/api/boards/${this.options.boardId}/items`, newItem);
+            
+            // Send real-time update
+            this.realTimeService.send({
+                type: 'item',
+                action: 'created',
+                boardId: this.options.boardId,
+                item: {
+                    ...newItem,
+                    id: `server-${Date.now()}` // Server would assign a real ID
+                },
+                optimisticId: newItem.optimisticId
+            });
+        }, 300);
     }
 
-    // Enhanced helper methods for filtering, sorting, and pagination
     getFilteredItems() {
-        let filtered = [...this.items];
-        
-        // Apply search filter
-        if (this.filters.search) {
-            const searchTerm = this.filters.search.toLowerCase();
-            filtered = filtered.filter(item => 
-                item.item?.toLowerCase().includes(searchTerm) ||
-                item.notes?.toLowerCase().includes(searchTerm) ||
-                Object.values(item).some(value => 
-                    typeof value === 'string' && value.toLowerCase().includes(searchTerm)
-                )
-            );
-        }
-        
-        // Apply status filter
-        if (this.filters.status) {
-            filtered = filtered.filter(item => item.status === this.filters.status);
-        }
-        
-        // Apply priority filter
-        if (this.filters.priority) {
-            filtered = filtered.filter(item => item.priority === this.filters.priority);
-        }
-        
-        // Apply assignee filter
-        if (this.filters.assignee) {
-            filtered = filtered.filter(item => 
-                item.person && item.person.id === this.filters.assignee
-            );
-        }
-        
-        return filtered;
+        return this.items.filter(item => {
+            let matches = true;
+            
+            if (this.filters.status && item.status !== this.filters.status) {
+                matches = false;
+            }
+            
+            if (this.filters.priority && item.priority !== this.filters.priority) {
+                matches = false;
+            }
+            
+            if (this.filters.assignee && item.person?.id !== this.filters.assignee) {
+                matches = false;
+            }
+            
+            if (this.filters.dateRange) {
+                const itemDate = new Date(item.date);
+                if (itemDate < this.filters.dateRange.start || itemDate > this.filters.dateRange.end) {
+                    matches = false;
+                }
+            }
+            
+            if (this.filters.search && 
+                !item.item.toLowerCase().includes(this.filters.search.toLowerCase())) {
+                matches = false;
+            }
+            
+            return matches;
+        });
     }
 
     getSortedItems(items) {
@@ -1073,25 +1559,13 @@ export class MondayStyleBoard {
             const aValue = a[this.sortBy.column];
             const bValue = b[this.sortBy.column];
             
-            // Handle different data types
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                return this.sortBy.direction === 'asc' 
-                    ? aValue.localeCompare(bValue)
-                    : bValue.localeCompare(aValue);
-            }
+            if (aValue === bValue) return 0;
             
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-                return this.sortBy.direction === 'asc' 
-                    ? aValue - bValue
-                    : bValue - aValue;
+            if (this.sortBy.direction === 'asc') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
             }
-            
-            // Fallback to string comparison
-            const aStr = String(aValue || '');
-            const bStr = String(bValue || '');
-            return this.sortBy.direction === 'asc' 
-                ? aStr.localeCompare(bStr)
-                : bStr.localeCompare(aStr);
         });
     }
 
@@ -1102,281 +1576,18 @@ export class MondayStyleBoard {
     }
 
     getActiveFilterCount() {
-        return Object.values(this.filters).filter(filter => 
-            filter !== null && filter !== ''
-        ).length;
+        return Object.values(this.filters).filter(f => f !== null && f !== '').length;
     }
 
-    // Enhanced event handlers
-    handleClick(e) {
-        // View switching
-        if (e.target.classList.contains('view-btn')) {
-            const view = e.target.dataset.view;
-            this.switchView(view);
-            return;
-        }
+    destroy() {
+        // Clean up real-time subscriptions
+        this.cleanupRealTime();
         
-        // Add item button
-        if (e.target.classList.contains('btn-add-item') || e.target.classList.contains('add-item-btn')) {
-            this.addNewItem();
-            return;
-        }
+        // Remove event listeners
+        document.removeEventListener('click', this.handleDocumentClick);
+        document.removeEventListener('keydown', this.handleDocumentKeydown);
         
-        // Bulk actions
-        if (e.target.dataset.action) {
-            this.handleBulkAction(e.target.dataset.action);
-            return;
-        }
-        
-        // Column sorting
-        if (e.target.classList.contains('column-sort-btn')) {
-            const columnId = e.target.dataset.column;
-            this.handleColumnSort(columnId);
-            return;
-        }
-        
-        // Row selection
-        if (e.target.classList.contains('row-checkbox')) {
-            this.handleRowSelection(e.target);
-            return;
-        }
-        
-        // Select all checkbox
-        if (e.target.classList.contains('select-all-checkbox')) {
-            this.handleSelectAll(e.target.checked);
-            return;
-        }
-        
-        // Pagination
-        if (e.target.classList.contains('pagination-btn')) {
-            this.handlePagination(e.target.dataset.action);
-            return;
-        }
-        
-        // Page size change
-        if (e.target.classList.contains('page-size-select')) {
-            this.handlePageSizeChange(parseInt(e.target.value));
-            return;
-        }
-        
-        // Search clear
-        if (e.target.classList.contains('search-clear')) {
-            this.clearSearch();
-            return;
-        }
-        
-        // Cell editing
-        const cell = e.target.closest('.editable-cell');
-        if (cell && !this.editingCell) {
-            this.startCellEdit(cell);
-        }
-    }
-
-    handleInput(e) {
-        if (e.target.classList.contains('search-input')) {
-            this.filters.search = e.target.value;
-            this.pagination.page = 1; // Reset to first page
-            this.render();
-        }
-    }
-
-    handleGlobalKeydown(e) {
-        // Keyboard shortcuts
-        if (e.ctrlKey || e.metaKey) {
-            switch (e.key) {
-                case 'a':
-                    e.preventDefault();
-                    this.selectAllItems();
-                    break;
-                case 'f':
-                    e.preventDefault();
-                    this.focusSearch();
-                    break;
-                case 'n':
-                    e.preventDefault();
-                    this.addNewItem();
-                    break;
-            }
-        }
-        
-        // Escape key
-        if (e.key === 'Escape') {
-            this.clearSelection();
-            this.clearFilters();
-        }
-    }
-
-    // Action handlers
-    handleBulkAction(action) {
-        const selectedItems = Array.from(this.selectedItems);
-        
-        switch (action) {
-            case 'bulk-delete':
-                this.bulkDeleteItems(selectedItems);
-                break;
-            case 'bulk-duplicate':
-                this.bulkDuplicateItems(selectedItems);
-                break;
-            case 'bulk-export':
-                this.bulkExportItems(selectedItems);
-                break;
-        }
-    }
-
-    handleColumnSort(columnId) {
-        if (this.sortBy.column === columnId) {
-            // Toggle direction
-            this.sortBy.direction = this.sortBy.direction === 'asc' ? 'desc' : 'asc';
-        } else {
-            // New column
-            this.sortBy.column = columnId;
-            this.sortBy.direction = 'asc';
-        }
-        
-        this.render();
-    }
-
-    handleRowSelection(checkbox) {
-        const itemId = checkbox.dataset.itemId;
-        
-        if (checkbox.checked) {
-            this.selectedItems.add(itemId);
-        } else {
-            this.selectedItems.delete(itemId);
-        }
-        
-        this.render();
-    }
-
-    handleSelectAll(checked) {
-        const filteredItems = this.getFilteredItems();
-        const paginatedItems = this.getPaginatedItems(filteredItems);
-        
-        if (checked) {
-            paginatedItems.forEach(item => this.selectedItems.add(item.id));
-        } else {
-            paginatedItems.forEach(item => this.selectedItems.delete(item.id));
-        }
-        
-        this.render();
-    }
-
-    handlePagination(action) {
-        const totalPages = Math.ceil(this.getFilteredItems().length / this.pagination.pageSize);
-        
-        switch (action) {
-            case 'prev':
-                if (this.pagination.page > 1) {
-                    this.pagination.page--;
-                }
-                break;
-            case 'next':
-                if (this.pagination.page < totalPages) {
-                    this.pagination.page++;
-                }
-                break;
-        }
-        
-        this.render();
-    }
-
-    handlePageSizeChange(newSize) {
-        this.pagination.pageSize = newSize;
-        this.pagination.page = 1; // Reset to first page
-        this.render();
-    }
-
-    clearSearch() {
-        this.filters.search = '';
-        this.pagination.page = 1;
-        this.render();
-        
-        // Clear the input field
-        const searchInput = this.container.querySelector('.search-input');
-        if (searchInput) {
-            searchInput.value = '';
-        }
-    }
-
-    selectAllItems() {
-        const filteredItems = this.getFilteredItems();
-        const paginatedItems = this.getPaginatedItems(filteredItems);
-        
-        if (this.selectedItems.size === paginatedItems.length) {
-            // Deselect all
-            this.selectedItems.clear();
-        } else {
-            // Select all visible
-            paginatedItems.forEach(item => this.selectedItems.add(item.id));
-        }
-        
-        this.render();
-    }
-
-    clearSelection() {
-        this.selectedItems.clear();
-        this.render();
-    }
-
-    clearFilters() {
-        this.filters = {
-            status: null,
-            priority: null,
-            assignee: null,
-            dateRange: null,
-            search: ''
-        };
-        this.pagination.page = 1;
-        this.render();
-    }
-
-    focusSearch() {
-        const searchInput = this.container.querySelector('.search-input');
-        if (searchInput) {
-            searchInput.focus();
-        }
-    }
-
-    bulkDeleteItems(itemIds) {
-        if (confirm(`Are you sure you want to delete ${itemIds.length} items?`)) {
-            itemIds.forEach(id => {
-                const index = this.items.findIndex(item => item.id === id);
-                if (index !== -1) {
-                    this.items.splice(index, 1);
-                }
-            });
-            this.selectedItems.clear();
-            this.render();
-        }
-    }
-
-    bulkDuplicateItems(itemIds) {
-        itemIds.forEach(id => {
-            const originalItem = this.items.find(item => item.id === id);
-            if (originalItem) {
-                const duplicatedItem = {
-                    ...originalItem,
-                    id: Date.now().toString(),
-                    item: originalItem.item + ' (Copy)',
-                };
-                this.items.push(duplicatedItem);
-            }
-        });
-        this.selectedItems.clear();
-        this.render();
-    }
-
-    bulkExportItems(itemIds) {
-        const itemsToExport = this.items.filter(item => itemIds.includes(item.id));
-        const dataStr = JSON.stringify(itemsToExport, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `items-export-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        
-        URL.revokeObjectURL(url);
+        // Clear container
+        this.container.innerHTML = '';
     }
 }
